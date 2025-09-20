@@ -1,0 +1,13 @@
+﻿namespace NutritionsApi.DAL.Models
+{
+    public class Nutrition
+    {
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public string? Description { get; set; }
+        public double Calories { get; set; }
+        public DateTime Created { get; set; }
+        public DateTime Updated { get; set; }
+        public bool IsDeleted { get; set; }
+    }
+}
