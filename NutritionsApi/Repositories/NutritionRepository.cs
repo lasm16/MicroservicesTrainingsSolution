@@ -1,9 +1,9 @@
-﻿using NutritionsApi.BLL;
-using NutritionsApi.DAL.Models;
+﻿using DataAccess.Models;
+using NutritionsApi.BLL;
 
-namespace NutritionsApi.DAL.Repositories
+namespace NutritionsApi.Repositories
 {
-    public class NutritionRepository(AppContext context) : INutritionRepository
+    public class NutritionRepository(DataAccess.AppContext context) : INutritionRepository
     {
         public Task AddAsync(NutritionDto user, CancellationToken cancellationToken = default)
         {

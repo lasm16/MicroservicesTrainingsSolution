@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using TrainingsApi.BLL.Services;
-using TrainingsApi.DAL.Repositories;
+using TrainingsApi.Repositories;
 using UsersApi.BLL.Services;
+using UsersApi.Repositories;
 
 namespace TrainingsApi
 {
@@ -18,10 +19,11 @@ namespace TrainingsApi
             builder.Services.AddOpenApi();
             builder.Services.AddScoped<ITrainingRepository, TrainingRepository>();
             builder.Services.AddScoped<ITrainingService, TrainingService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddDbContext<DAL.AppContext>(x =>
+            builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {
-                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=NoteDb;");
+                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=TrainingsDb;");
             });
 
             var app = builder.Build();

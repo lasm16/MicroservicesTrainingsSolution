@@ -1,7 +1,7 @@
-﻿using TrainingsApi.BLL;
-using TrainingsApi.DAL.Models;
+﻿using DataAccess.Models;
+using TrainingsApi.BLL;
 
-namespace TrainingsApi.DAL.Repositories
+namespace TrainingsApi.Repositories
 {
     public interface ITrainingRepository
     {

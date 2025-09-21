@@ -25,6 +25,7 @@ namespace TrainingsApi.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTrainingAsync(int userId, string description, string dateString, double duration, bool isCompleted)
         {
+            var user = await userService.GetByIdAsync(userId);
             _ = DateTime.TryParse(dateString, out DateTime date);
             await trainingService.CreateAsync(userId, description, date, duration, isCompleted);
             return NoContent();

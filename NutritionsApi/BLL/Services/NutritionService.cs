@@ -1,4 +1,4 @@
-﻿using NutritionsApi.DAL.Repositories;
+﻿using NutritionsApi.Repositories;
 
 namespace NutritionsApi.BLL.Services
 {

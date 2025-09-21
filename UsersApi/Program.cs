@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UsersApi.BLL.Services;
-using UsersApi.DAL.Repositories;
+using UsersApi.Repositories;
 
 namespace UsersApi
 {
@@ -17,9 +17,9 @@ namespace UsersApi
             builder.Services.AddOpenApi();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddDbContext<DAL.AppContext>(x =>
+            builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {
-                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=NoteDb;");
+                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=TrainingsDb;");
             });
 
             var app = builder.Build();

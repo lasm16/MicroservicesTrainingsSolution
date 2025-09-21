@@ -1,4 +1,4 @@
-﻿using TrainingsApi.DAL.Repositories;
+﻿using TrainingsApi.Repositories;
 
 namespace TrainingsApi.BLL.Services
 {
@@ -14,7 +14,7 @@ namespace TrainingsApi.BLL.Services
             throw new NotImplementedException();
         }
 
-        public Task CreateAsync(int userId, string description, DateTime date, double duration, bool isCompleted, CancellationToken cancellationToken = default)
+        public async Task CreateAsync(int userId, string description, DateTime date, double duration, bool isCompleted, CancellationToken cancellationToken = default)
         {
             var training = new TrainingDto
             {
@@ -24,7 +24,7 @@ namespace TrainingsApi.BLL.Services
                 DurationInMinutes = duration,
                 IsCompleted = isCompleted,
             };
-            throw new NotImplementedException();
+            await repository.AddAsync(training);
         }
 
         public Task DeleteAsync(int id, CancellationToken cancellationToken = default)

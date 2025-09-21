@@ -1,7 +1,7 @@
-﻿using UsersApi.BLL;
-using UsersApi.DAL.Models;
+﻿using DataAccess.Models;
+using UsersApi.BLL;
 
-namespace UsersApi.DAL.Repositories
+namespace UsersApi.Repositories
 {
     public interface IUserRepository
     {

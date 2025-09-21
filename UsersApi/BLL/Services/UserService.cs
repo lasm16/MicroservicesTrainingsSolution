@@ -1,4 +1,4 @@
-﻿using UsersApi.DAL.Repositories;
+﻿using UsersApi.Repositories;
 
 namespace UsersApi.BLL.Services
 {
@@ -9,19 +9,20 @@ namespace UsersApi.BLL.Services
             throw new NotImplementedException();
         }
 
-        public Task<string> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<string> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var user = await userRepository.GetByIdAsync(id, cancellationToken);
+            return user.Name;
         }
 
-        public Task CreateAsync(string name, string email, CancellationToken cancellationToken = default)
+        public async Task CreateAsync(string name, string email, CancellationToken cancellationToken = default)
         {
             var user = new UserDto
             {
                 Name = name,
                 Email = email
             };
-            throw new NotImplementedException();
+            await userRepository.AddAsync(user);
         }
 
         public Task DeleteAsync(int id, CancellationToken cancellationToken = default)

@@ -1,4 +1,4 @@
-﻿namespace UsersApi.DAL.Models
+﻿namespace DataAccess.Models
 {
     public class User
     {

@@ -1,7 +1,7 @@
-﻿using NutritionsApi.BLL;
-using NutritionsApi.DAL.Models;
+﻿using DataAccess.Models;
+using NutritionsApi.BLL;
 
-namespace NutritionsApi.DAL.Repositories
+namespace NutritionsApi.Repositories
 {
     public interface INutritionRepository
     {
