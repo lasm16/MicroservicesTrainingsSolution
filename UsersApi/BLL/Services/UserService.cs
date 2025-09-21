@@ -12,7 +12,8 @@ namespace UsersApi.BLL.Services
         public async Task<string> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var user = await userRepository.GetByIdAsync(id, cancellationToken);
-            return user.Name;
+            var userName = user.Name + " " + user.Surname;
+            return userName;
         }
 
         public async Task CreateAsync(string name, string email, CancellationToken cancellationToken = default)
