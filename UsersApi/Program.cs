@@ -17,10 +17,9 @@ namespace UsersApi
             builder.Services.AddOpenApi();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddDbContext<DataAccess.AppContext>(x =>
-            {
-                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=TrainingsDb;");
-            });
+            builder.Services.AddDbContext<DataAccess.AppContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("TrainingsDb"))
+);
 
             var app = builder.Build();
 

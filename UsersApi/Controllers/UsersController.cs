@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using UsersApi.BLL.DTO;
+using UsersApi.BLL.Models;
 using UsersApi.BLL.Services;
 
 namespace UsersApi.Controllers
@@ -8,37 +10,42 @@ namespace UsersApi.Controllers
     public class UsersController(IUserService userService) : ControllerBase
     {
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetUserAsync([FromRoute] int id)
+        public async Task<IActionResult> GetUserAsync([FromRoute] int id, CancellationToken ct)
         {
-            var result = await userService.GetByIdAsync(id);
-            return Ok(result);
+            var result = await userService.GetByIdAsync(id, ct);
+            return string.IsNullOrEmpty(result) ? NotFound() : Ok(new { userName = result });
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllUsersAsync()
+        public async Task<IActionResult> GetAllUsersAsync(CancellationToken ct)
         {
-            var result = await userService.GetAllAsync();
-            return Ok(result);
+            var result = await userService.GetAllAsync(ct);
+            return Ok(result.Select(name => new { userName = name }));
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUserAsync(string name, string email)
+        public async Task<IActionResult> CreateUserAsync(
+            [FromBody] CreateUserRequest request,
+            CancellationToken ct)
         {
-            await userService.CreateAsync(name, email);
+            await userService.CreateAsync(request.Name, request.Email, ct);
             return NoContent();
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateUserAsync([FromRoute] int id, string userName, string email)
+        public async Task<IActionResult> UpdateUserAsync(
+            [FromRoute] int id,
+            [FromBody] UpdateUserRequest request,
+            CancellationToken ct)
         {
-            await userService.UpdateAsync(id, userName, email);
+            await userService.UpdateAsync(id, request.Name, request.Email, ct);
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteUserAsync([FromRoute] int id)
+        public async Task<IActionResult> DeleteUserAsync([FromRoute] int id, CancellationToken ct)
         {
-            await userService.DeleteAsync(id);
+            await userService.DeleteAsync(id, ct);
             return NoContent();
         }
     }
