@@ -12,34 +12,47 @@ namespace UsersApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetUserAsync([FromRoute] int id, CancellationToken ct)
         {
-            var result = await userService.GetByIdAsync(id, ct);
-            return string.IsNullOrEmpty(result) ? NotFound() : Ok(new { userName = result });
+            var userDto = await userService.GetByIdAsync(id, ct);
+
+            if (userDto == null)
+                return NotFound();
+
+            var fullName = $"{userDto.Name} {userDto.Surname}".Trim();
+            return Ok(new { userName = fullName });
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllUsersAsync(CancellationToken ct)
         {
-            var result = await userService.GetAllAsync(ct);
-            return Ok(result.Select(name => new { userName = name }));
+            var usersDto = await userService.GetAllAsync(ct);
+
+            var result = usersDto
+                .Select(u => new
+                {
+                    userName = $"{u.Name} {u.Surname}".Trim()
+                })
+                .ToList();
+
+            return Ok(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateUserAsync(
-            [FromBody] CreateUserRequest request,
+            [FromBody] CreateUserDTO request,
             CancellationToken ct)
         {
-            await userService.CreateAsync(request.Name, request.Email, ct);
+            await userService.CreateAsync(request, ct);
             return NoContent();
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateUserAsync(
             [FromRoute] int id,
-            [FromBody] UpdateUserRequest request,
+            [FromBody] UpdateUserDTO request,
             CancellationToken ct)
         {
-            await userService.UpdateAsync(id, request.Name, request.Email, ct);
-            return NoContent();
+            var success = await userService.UpdateAsync(request, ct);
+            return success ? NoContent() : NotFound();
         }
 
         [HttpDelete("{id:int}")]
