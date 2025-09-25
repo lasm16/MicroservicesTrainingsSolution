@@ -2,12 +2,12 @@
 
 namespace UsersApi.BLL.Mapper
 {
-    public class UserMapper : IUserMapper
+    public class UserMapper 
     {
-        public User ToEntity(UserDto dto)
+        public static User ToEntity(UserDto dto)
         {
-            if (dto == null)
-                return null!; 
+            if (IsNull(dto))
+                return null!;
 
             return new User
             {
@@ -21,10 +21,10 @@ namespace UsersApi.BLL.Mapper
             };
         }
 
-        public UserDto ToDto(User entity)
+        public static UserDto ToDto(User entity)
         {
-            if (entity == null || entity.IsDeleted)
-                return null!; 
+            if (IsNull(entity) || entity.IsDeleted)
+                return null!;
 
             return new UserDto
             {
@@ -34,14 +34,20 @@ namespace UsersApi.BLL.Mapper
                 Email = entity.Email
             };
         }
-        public void UpdateEntity(UserDto dto, User entity)
+        public static void UpdateEntity(UserDto dto, User entity)
         {
-            if (dto == null || entity == null) return;
+            if (IsNull(dto) || IsNull(entity))
+                return;
 
             entity.Name = dto.Name;
             entity.Surname = dto.Surname;
             entity.Email = dto.Email;
             entity.Updated = DateTime.UtcNow;            
+        }
+
+        private static bool IsNull<T>(T obj) where T : class
+        {
+            return obj == null;
         }
     }
 }
