@@ -1,5 +1,4 @@
-﻿using UsersApi.BLL.DTO;
-using UsersApi.BLL.Mapper;
+﻿using UsersApi.BLL.Mapper;
 using UsersApi.BLL.Models;
 using UsersApi.Repositories;
 
@@ -23,9 +22,9 @@ namespace UsersApi.BLL.Services
                         .ToList();
         }
 
-        public async Task<UserDto> CreateAsync(CreateUserDTO request, CancellationToken cancellationToken)
+        public async Task<UserDto> CreateAsync(UserRequest request, CancellationToken cancellationToken)
         {
-            var userDto = MapToUserDto(request.Name, request.Surname, request.Email);
+            var userDto = UserMapper.MapToUserDto(request.Name, request.Surname, request.Email);
 
             var userEntity = UserMapper.ToEntity(userDto);
 
@@ -36,7 +35,7 @@ namespace UsersApi.BLL.Services
 
         public async Task<bool> UpdateAsync(UserRequest request, CancellationToken cancellationToken)
         {         
-            var userDto = MapToUserDto(request.Name, request.Surname, request.Email);
+            var userDto = UserMapper.MapToUserDto(request.Name, request.Surname, request.Email);
             
 
             var existingUser = await userRepository.GetByIdAsync(userDto.Id, cancellationToken);
@@ -50,19 +49,15 @@ namespace UsersApi.BLL.Services
             return true;
         }
 
-        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            await userRepository.DeleteAsync(id, cancellationToken);
-        }
-        private UserDto MapToUserDto(string name, string surname, string email)
-        {
-            return new UserDto
+            if (id <= 0)
             {
-                Name = name,
-                Surname = surname,
-                Email = email
-            };
+                return false;
+            }
+            return await userRepository.DeleteAsync(id, cancellationToken);            
         }
+        
 
     }
 }

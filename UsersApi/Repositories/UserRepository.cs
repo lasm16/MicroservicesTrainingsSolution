@@ -1,6 +1,5 @@
 ﻿using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using UsersApi.BLL;
 
 namespace UsersApi.Repositories
 {
@@ -33,7 +32,7 @@ namespace UsersApi.Repositories
             await context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var user = await context.Users.FindAsync([id], cancellationToken);
             if (user != null && !user.IsDeleted)
@@ -43,7 +42,9 @@ namespace UsersApi.Repositories
 
                 context.Users.Update(user);
                 await context.SaveChangesAsync(cancellationToken);
+                return true;
             }
+            return false;
         }
     }
 }

@@ -49,5 +49,14 @@ namespace UsersApi.BLL.Mapper
         {
             return obj == null;
         }
+        public static UserDto MapToUserDto(string name, string surname, string email)
+        {
+            return new UserDto
+            {
+                Name = name,
+                Surname = surname,
+                Email = email
+            };
+        }
     }
 }

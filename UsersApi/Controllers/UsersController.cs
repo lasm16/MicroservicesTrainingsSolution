@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UsersApi.BLL.DTO;
 using UsersApi.BLL.Models;
 using UsersApi.BLL.Services;
 
@@ -38,7 +37,7 @@ namespace UsersApi.Controllers
 
         [HttpPost]
         public async Task<IActionResult> CreateUserAsync(
-            [FromBody] CreateUserDTO request,
+            [FromBody] UserRequest request,
             CancellationToken cancellationToken)
         {
             await userService.CreateAsync(request, cancellationToken);
@@ -46,8 +45,7 @@ namespace UsersApi.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateUserAsync(
-            [FromRoute] int id,
+        public async Task<IActionResult> UpdateUserAsync(            
             [FromBody] UserRequest request,
             CancellationToken cancellationToken)
         {
