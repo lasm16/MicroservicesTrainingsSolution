@@ -1,45 +1,63 @@
-﻿using UsersApi.Repositories;
+﻿using UsersApi.BLL.Mapper;
+using UsersApi.BLL.Models;
+using UsersApi.Repositories;
 
 namespace UsersApi.BLL.Services
 {
     public class UserService(IUserRepository userRepository) : IUserService
     {
-        public Task<List<string>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<string> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        
+        public async Task<UserDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var user = await userRepository.GetByIdAsync(id, cancellationToken);
-            var userName = user.Name + " " + user.Surname;
-            return userName;
+            if (user == null) return null;
+
+            return UserMapper.ToDto(user); 
         }
 
-        public async Task CreateAsync(string name, string email, CancellationToken cancellationToken = default)
+        public async Task<List<UserDto>> GetAllAsync(CancellationToken cancellationToken)
         {
-            var user = new UserDto
+            var users = await userRepository.GetAllAsync(cancellationToken);
+            return users.Select(u => UserMapper.ToDto(u))
+                        .ToList();
+        }
+
+        public async Task<UserDto> CreateAsync(UserRequest request, CancellationToken cancellationToken)
+        {
+            var userDto = UserMapper.MapToUserDto(request.Id,request.Name, request.Surname, request.Email);
+
+            var userEntity = UserMapper.ToEntity(userDto);
+
+            await userRepository.CreatedAsync(userEntity, cancellationToken);
+
+            return userDto;
+        }
+
+        public async Task<bool> UpdateAsync(UserRequest request, CancellationToken cancellationToken)
+        {         
+            var userDto = UserMapper.MapToUserDto(request.Id,request.Name, request.Surname, request.Email);
+            
+
+            var existingUser = await userRepository.GetByIdAsync(userDto.Id, cancellationToken);
+            if (existingUser == null || existingUser.IsDeleted)
+                return false;
+
+            UserMapper.UpdateEntity(userDto, existingUser);
+
+            await userRepository.UpdateAsync(existingUser, cancellationToken);
+
+            return true;
+        }
+
+        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+        {
+            if (id <= 0)
             {
-                Name = name,
-                Email = email
-            };
-            await userRepository.AddAsync(user);
+                return false;
+            }
+            return await userRepository.DeleteAsync(id, cancellationToken);            
         }
+        
 
-        public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateAsync(int id, string name, string email, CancellationToken cancellationToken = default)
-        {
-            var user = new UserDto
-            {
-                Id = id,
-                Name = name,
-                Email = email
-            };
-            throw new NotImplementedException();
-        }
     }
 }
