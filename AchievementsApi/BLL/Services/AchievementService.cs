@@ -10,11 +10,12 @@ namespace AchievementsApi.BLL.Services
             throw new NotImplementedException();
         }
 
-        public Task<AchievementDto> GetByIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<AchievementDto> GetByIdAsync(int userId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var achievement = await achievementRepository.GetByIdAsync(userId, cancellationToken);
+
         }
-        public Task<bool> CreateAsync(AchievementDto achievement, CancellationToken cancellationToken)
+        public Task<AchievementDto> CreateAsync(AchievementDto achievement, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

@@ -1,4 +1,5 @@
 ﻿using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AchievementsApi.Repositores
 {
@@ -19,9 +20,11 @@ namespace AchievementsApi.Repositores
             throw new NotImplementedException();
         }
 
-        public Task<Achievement> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<List<Achievement>> GetByIdAsync(int userId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await context.Achievements
+                .Where(x => x.UserId == userId)
+                .ToListAsync(cancellationToken: cancellationToken);
         }
 
         public Task UpdateAsync(Achievement achievement, CancellationToken cancellationToken = default)
