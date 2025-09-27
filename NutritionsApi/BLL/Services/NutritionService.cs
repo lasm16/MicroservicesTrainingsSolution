@@ -1,44 +1,97 @@
-﻿using NutritionsApi.Repositories;
+﻿using AutoMapper;
+using DataAccess.Models;
+using NutritionsApi.Abstractions;
+using NutritionsApi.BLL.DTO.RequestDto;
+using NutritionsApi.BLL.DTO.ResponseDto;
+using NutritionsApi.Exceptions;
 
 namespace NutritionsApi.BLL.Services
 {
-    public class NutritionService(INutritionRepository nutritionRepository) : INutritionService
+    public class NutritionService(
+        INutritionRepository nutritionRepository,
+        IMapper mapper, 
+        IDtoFactory dtoFactory) : INutritionService
     {
-        public Task<List<string>> GetAllAsync(CancellationToken cancellationToken = default)
+        private readonly INutritionRepository _nutritionRepository = nutritionRepository;
+        private readonly IMapper _dtoMapper = mapper;
+        private readonly IDtoFactory _dtoFactory = dtoFactory;
+        
+        public async Task<NutritionDetailsResponseDto> GetByIdAsync(int nutritionId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var model = await _nutritionRepository.GetByIdAsync(nutritionId, cancellationToken);
+            
+            if (model is null)
+                throw new NotFoundException("GetNutrition", nutritionId);
+            
+            var dto = _dtoFactory.GenerateDetailsResponse(
+                model.Id, 
+                model.UserId, 
+                model.Description, 
+                model.Calories, 
+                model.IsDeleted);
+
+            return dto;
         }
 
-        public Task<string> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<List<NutritionDetailsResponseDto>> GetAllAsync(int userId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var nutritionList = await _nutritionRepository.GetAllAsync(userId, cancellationToken);
+
+            var dtoList = nutritionList?.Select(nutrition =>
+                    _dtoFactory.GenerateDetailsResponse(
+                        nutrition.Id, 
+                        nutrition.UserId, 
+                        nutrition.Description, 
+                        nutrition.Calories, 
+                        nutrition.IsDeleted)
+                ).ToList();
+            
+            return dtoList ?? [];
         }
 
-        public Task CreateAsync(int userId, string description, double calories, CancellationToken cancellationToken = default)
+
+        public async Task<NutritionDetailsResponseDto> CreateAsync(CreateNutritionRequestDto dto, CancellationToken cancellationToken = default)
         {
-            var nutrition = new NutritionDto
+            var model = new Nutrition();
+            var createModel = _dtoMapper.Map(dto, model);
+            var result = await _nutritionRepository.CreateAsync(createModel, cancellationToken);
+            
+            if (!result)
             {
-                UserId = userId,
-                Description = description,
-                Calories = calories,
-            };
-            throw new NotImplementedException();
+                throw new InvalidOperationException("Failed to create nutrition");
+            }
+
+            return _dtoFactory.GenerateDetailsResponse(
+                model.Id, 
+                model.UserId, 
+                model.Description, 
+                model.Calories, 
+                model.IsDeleted);
         }
 
-        public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<bool> UpdateAsync(UpdateNutritionRequestDto dto, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
-        }
+            var model = await _nutritionRepository.GetByIdAsync(dto.NutritionId, cancellationToken);
 
-        public Task UpdateAsync(int id, int userId, string description, double calories, CancellationToken cancellationToken = default)
-        {
-            var user = new NutritionDto
+            if (model is null)
             {
-                UserId = userId,
-                Description = description,
-                Calories = calories
-            };
-            throw new NotImplementedException();
+                throw new NotFoundException("Update nutrition", dto.NutritionId);
+            }
+            
+            var updatedModel = _dtoMapper.Map(dto, model);
+            return await _nutritionRepository.UpdateAsync(updatedModel, cancellationToken);
+        }
+
+        public async Task<bool> DeleteAsync(int nutritionId, CancellationToken cancellationToken = default)
+        {
+            var model = await _nutritionRepository.GetByIdAsync(nutritionId, cancellationToken);
+
+            if (model is null)
+            {
+                throw new NotFoundException("Delete nutrition", nutritionId);
+            }
+            
+            return await _nutritionRepository.DeleteAsync(model.Id, cancellationToken);
         }
     }
 }
