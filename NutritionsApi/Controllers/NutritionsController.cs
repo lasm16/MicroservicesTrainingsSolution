@@ -1,46 +1,55 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using NutritionsApi.BLL.Services;
-using UsersApi.BLL.Services;
+using NutritionsApi.Abstractions;
+using NutritionsApi.BLL.DTO;
+using NutritionsApi.BLL.DTO.RequestDto;
 
 namespace NutritionsApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class NutritionsController(INutritionService nutritionService, IUserService userService) : ControllerBase
+    public class NutritionsController(INutritionService nutritionService) : ControllerBase
     {
-        [HttpGet("{id:int}")]
+        private readonly INutritionService _nService = nutritionService;
+        
+        [HttpGet("get/{id:int}")]
         public async Task<IActionResult> GetNutritionAsync([FromRoute] int id)
         {
-            var result = await nutritionService.GetByIdAsync(id);
+            var result = await _nService.GetByIdAsync(id);
+            return Ok(result);
+        }
+        
+        [HttpGet("get-all/{userId:int}")]
+        public async Task<IActionResult> GetAllNutritionAsync([FromRoute] int userId)
+        {
+            var result = await _nService.GetAllAsync(userId);
             return Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllNutritionsAsync()
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateNutritionAsync([FromBody] CreateNutritionRequestDto createNutritionRequestDto)
         {
-            var result = await nutritionService.GetAllAsync();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            
+            var result = await _nService.CreateAsync(createNutritionRequestDto);
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateNutritionAsync(int userId, string description, double calories)
+        [HttpPost("update")]
+        public async Task<IActionResult> UpdateNutritionAsync([FromBody] UpdateNutritionRequestDto updateNutritionRequestDto)
         {
-            await nutritionService.CreateAsync(userId, description, calories);
-            return NoContent();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            
+            await _nService.UpdateAsync(updateNutritionRequestDto);
+            return Ok("Updated");
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateNutritionAsync([FromRoute] int id, int userId, string description, double calories)
-        {
-            await nutritionService.UpdateAsync(id, userId, description, calories);
-            return NoContent();
-        }
-
-        [HttpDelete("{id:int}")]
+        [HttpDelete("delete/{id:int}")]
         public async Task<IActionResult> DeleteNutritionAsync([FromRoute] int id)
-        {
-            await nutritionService.DeleteAsync(id);
-            return NoContent();
+        { 
+            await _nService.DeleteAsync(id);
+            return Ok("Deleted");
         }
     }
 }
