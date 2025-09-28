@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TrainingsApi.BLL;
 using TrainingsApi.BLL.Services;
 using UsersApi.BLL.Services;
 
@@ -12,7 +13,7 @@ namespace TrainingsApi.Controllers
         public async Task<IActionResult> GetTrainingAsync([FromRoute] int id)
         {
             var result = await trainingService.GetByIdAsync(id);
-            return Ok(result);
+            return result is null ? NotFound() : Ok(result);
         }
 
         [HttpGet]
@@ -23,19 +24,20 @@ namespace TrainingsApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTrainingAsync(int userId, string description, string dateString, double duration, bool isCompleted)
+        public async Task<IActionResult> CreateTrainingAsync([FromBody] TrainingDto dto)
         {
-            var user = await userService.GetByIdAsync(userId);
-            _ = DateTime.TryParse(dateString, out DateTime date);
-            await trainingService.CreateAsync(userId, description, date, duration, isCompleted);
+            var user = await userService.GetByIdAsync(dto.UserId);
+            if (user is null) return NotFound($"User with id {dto.UserId} not found");
+
+            await trainingService.CreateAsync(dto);
             return NoContent();
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateTrainingAsync([FromRoute] int id, int userId, string description, string dateString, double duration, bool isCompleted)
+        public async Task<IActionResult> UpdateTrainingAsync([FromRoute] int id, [FromBody] TrainingDto dto)
         {
-            _ = DateTime.TryParse(dateString, out DateTime date);
-            await trainingService.UpdateAsync(id, userId, description, date, duration, isCompleted);
+            dto.Id = id;
+            await trainingService.UpdateAsync(dto);
             return NoContent();
         }
 
