@@ -66,7 +66,7 @@ namespace AchievementsApi.Repositores
                 achievement.Id = 1;
             }
             if (last != null)
-        {
+            {
                 achievement.Id = last.Id + 1;
             }
             achievement.CreatedAt = DateTime.UtcNow;
