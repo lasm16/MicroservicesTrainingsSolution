@@ -1,6 +1,7 @@
 ﻿using AchievementsApi.BLL.DTO;
 using AchievementsApi.BLL.Services;
 using Microsoft.AspNetCore.Mvc;
+using UsersApi.BLL.Services;
 
 namespace AchievementsApi.Controllers
 {

@@ -14,7 +14,7 @@ namespace AchievementsApi.BLL.Services
             if (achievements.Count == 0)
             {
                 return [];
-            }
+        }
             return AchievementMapper.MapEntityCollectionToDto(achievements);
         }
 
@@ -22,7 +22,7 @@ namespace AchievementsApi.BLL.Services
         {
             var achievement = await _achievementRepository.GetByIdAsync(id, cancellationToken);
             if (achievement == null)
-            {
+        {
                 Console.WriteLine($"Не найдено достижение с id={id}!");
                 return null;
             }
