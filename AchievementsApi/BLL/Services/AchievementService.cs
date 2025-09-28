@@ -1,33 +1,48 @@
 ﻿using AchievementsApi.BLL.DTO;
+using AchievementsApi.BLL.Helpers;
 using AchievementsApi.Repositores;
 
 namespace AchievementsApi.BLL.Services
 {
     public class AchievementService(IAchievementRepository achievementRepository) : IAchievementService
     {
-        public Task<List<AchievementDto>> GetAllAsync(CancellationToken cancellationToken)
+        private readonly IAchievementRepository _achievementRepository = achievementRepository;
+
+        public async Task<List<AchievementDto>> GetAllByUserIdAsync(int userId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var achievements = await _achievementRepository.GetAllAsync(userId, cancellationToken);
+            if (achievements.Count == 0)
+            {
+                return [];
+            }
+            return AchievementMapper.MapEntityCollectionToDto(achievements);
         }
 
-        public async Task<AchievementDto> GetByIdAsync(int userId, CancellationToken cancellationToken)
+        public async Task<AchievementDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
-            var achievement = await achievementRepository.GetByIdAsync(userId, cancellationToken);
-
+            var achievement = await _achievementRepository.GetByIdAsync(id, cancellationToken);
+            if (achievement == null)
+            {
+                Console.WriteLine($"Не найдено достижение с id={id}!");
+                return null;
+            }
+            return AchievementMapper.MapEntityToDto(achievement);
         }
-        public Task<AchievementDto> CreateAsync(AchievementDto achievement, CancellationToken cancellationToken)
+        public async Task<bool> CreateAsync(AchievementRequest request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var entity = AchievementMapper.MapDtoToEntity(request);
+            return await _achievementRepository.AddAsync(entity, cancellationToken);
         }
 
         public Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _achievementRepository.DeleteAsync(id, cancellationToken);
         }
 
         public Task<bool> UpdateAsync(AchievementDto achievement, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var entity = AchievementMapper.MapDtoToEntity(achievement);
+            return _achievementRepository.UpdateAsync(entity, cancellationToken);
         }
     }
 }

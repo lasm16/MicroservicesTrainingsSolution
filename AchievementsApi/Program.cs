@@ -16,7 +16,13 @@ namespace AchievementsApi
             builder.Services.AddScoped<IAchievementService, AchievementService>();
             builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {
-                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=TrainingsDb;");
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+                var configurationString = configuration.GetConnectionString("DefaultConnection");
+                x.UseNpgsql(configurationString);
+                x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
 
             var app = builder.Build();

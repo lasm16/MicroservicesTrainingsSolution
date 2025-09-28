@@ -9,8 +9,8 @@ namespace DataAccess.Models
         public AchievementType Type { get; set; }
         public decimal Value { get; set; }
         public DateTime AchievedDate { get; set; }
-        public DateTime Created { get; set; }
-        public DateTime Updated { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

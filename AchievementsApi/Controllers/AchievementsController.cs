@@ -1,4 +1,5 @@
-﻿using AchievementsApi.BLL.Services;
+﻿using AchievementsApi.BLL.DTO;
+using AchievementsApi.BLL.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AchievementsApi.Controllers
@@ -9,41 +10,39 @@ namespace AchievementsApi.Controllers
     {
         private readonly IAchievementService _achievementService = achievementService;
 
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetAchievementAsync([FromRoute] int userId)
+        [HttpGet("get/{id:int}")]
+        public async Task<IActionResult> GetAchievementAsync([FromRoute] int id)
         {
-            var response = await _achievementService.GetByIdAsync(userId);
-            return Ok(response);
+            var response = await _achievementService.GetByIdAsync(id);
+            return response == null ? BadRequest("Something went wrong...") : Ok(response);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllTrainingsAsync()
+        [HttpGet("get-all/{userId:int}")]
+        public async Task<IActionResult> GetAllAchievementsAsync(int userId)
         {
-            var result = await _achievementService.GetAllAsync();
+            var result = await _achievementService.GetAllByUserIdAsync(userId);
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateTrainingAsync(int userId, string description, string dateString, double duration, bool isCompleted)
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateAchievementAsync([FromBody] AchievementRequest request)
         {
-            _ = DateTime.TryParse(dateString, out DateTime date);
-            //await achievementService.CreateAsync(userId, description, date, duration, isCompleted);
-            return NoContent();
+            var result = await _achievementService.CreateAsync(request);
+            return result ? Ok("Created") : BadRequest("Something went wrong...");
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateTrainingAsync([FromRoute] int id, int userId, string description, string dateString, double duration, bool isCompleted)
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateAchievementAsync([FromBody] AchievementDto achievementDto)
         {
-            _ = DateTime.TryParse(dateString, out DateTime date);
-            //await achievementService.UpdateAsync(id, userId, description, date, duration, isCompleted);
-            return NoContent();
+            var result = await _achievementService.UpdateAsync(achievementDto);
+            return result ? Ok("Updated") : BadRequest("Something went wrong...");
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteTrainingAsync([FromRoute] int id)
+        public async Task<IActionResult> DeleteAchievementAsync([FromRoute] int id)
         {
-            await _achievementService.DeleteAsync(id);
-            return NoContent();
+            var result = await _achievementService.DeleteAsync(id);
+            return result ? Ok("Deleted") : BadRequest("Something went wrong...");
         }
     }
 }
