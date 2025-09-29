@@ -44,7 +44,7 @@ namespace TrainingsApi.BLL.Services
         {
             var training = await repository.GetByIdAsync(id, cancellationToken);
             if (training is null)
-                throw new KeyNotFoundException($"Training with id {id} not found");
+                throw new ArgumentException($"Training with id {id} not found");
 
             await repository.DeleteAsync(training, cancellationToken);
         }
