@@ -5,9 +5,9 @@ namespace TrainingsApi.BLL.Services
 {
     public class TrainingService(ITrainingRepository repository) : ITrainingService
     {
-        public async Task<List<TrainingDto>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<List<TrainingDto>> GetAllAsync(int userId, CancellationToken cancellationToken = default)
         {
-            var trainings = await repository.GetAllAsync(cancellationToken);
+            var trainings = await repository.GetAllAsync(userId, cancellationToken);
             return TrainingMapper.ToDtoList(trainings);
         }
 
@@ -34,7 +34,7 @@ namespace TrainingsApi.BLL.Services
         {
             var training = await repository.GetByIdAsync(dto.Id, cancellationToken);
             if (training is null)
-                throw new KeyNotFoundException($"Training with id {dto.Id} not found");
+                throw new ArgumentException($"Training with id {dto.Id} not found");
 
             TrainingMapper.UpdateEntity(training, dto);
             await repository.UpdateAsync(training, cancellationToken);

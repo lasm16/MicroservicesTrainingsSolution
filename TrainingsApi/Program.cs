@@ -37,7 +37,7 @@ namespace TrainingsApi
 
             if (app.Environment.IsDevelopment())
             {
-                app.UseOpenApi(); 
+                app.UseOpenApi();
                 app.UseSwaggerUi(settings =>
                 {
                     settings.Path = "";
