@@ -1,4 +1,5 @@
 ﻿using AchievementsApi.BLL.Abstractions;
+using YamlDotNet.Core.Tokens;
 
 namespace AchievementsApi.BLL.RewardStrategies
 {
@@ -10,7 +11,7 @@ namespace AchievementsApi.BLL.RewardStrategies
             {
                 DataAccess.Enums.AchievementType.Running => new RunningRewardCalculator(),
                 DataAccess.Enums.AchievementType.StrengthTraining => new StrengthTrainingRewardCalculator(),
-                _ => null,
+                _ => throw new ArgumentException(message: $"Unexpected enum value: {type}", paramName: nameof(type)),
             };
         }
     }
