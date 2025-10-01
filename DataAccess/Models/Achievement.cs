@@ -8,6 +8,7 @@ namespace DataAccess.Models
         public int UserId { get; set; }
         public AchievementType Type { get; set; }
         public decimal Value { get; set; }
+        public decimal Reward { get; set; }
         public DateTime AchievedDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

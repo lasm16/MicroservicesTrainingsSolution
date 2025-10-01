@@ -1,4 +1,5 @@
-﻿using DataAccess.Models;
+﻿using AchievementsApi.BLL.Abstractions;
+using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AchievementsApi.Repositores
@@ -61,13 +62,13 @@ namespace AchievementsApi.Repositores
 
         private static void CreateEntity(Achievement achievement, Achievement? last)
         {
-            if (last == null)
-            {
-                achievement.Id = 1;
-            }
             if (last != null)
             {
                 achievement.Id = last.Id + 1;
+            }
+            else
+            {
+                achievement.Id = 1;
             }
             achievement.CreatedAt = DateTime.UtcNow;
         }
