@@ -34,7 +34,7 @@ namespace AchievementsApi.BLL.Services
         public async Task<bool> CreateAsync(AchievementRequest request, CancellationToken cancellationToken)
         {
             var achievement = AchievementMapper.MapDtoToEntity((AchievementCreateRequest)request);
-            _rewardCalculator = AchievementsStrategyFactory.CreateStrategy(achievement.Type);
+            _rewardCalculator = RewardStrategyFactory.CreateStrategy(achievement.Type);
             _rewardCalculator!.CalculateReward(achievement);
             return await _achievementRepository.AddAsync(achievement, cancellationToken);
         }
@@ -47,7 +47,7 @@ namespace AchievementsApi.BLL.Services
         public Task<bool> UpdateAsync(AchievementRequest request, CancellationToken cancellationToken)
         {
             var achievement = AchievementMapper.MapDtoToEntity((AchievementUpdateRequest)request);
-            _rewardCalculator = AchievementsStrategyFactory.CreateStrategy(achievement.Type);
+            _rewardCalculator = RewardStrategyFactory.CreateStrategy(achievement.Type);
             _rewardCalculator!.CalculateReward(achievement);
             return _achievementRepository.UpdateAsync(achievement, cancellationToken);
         }

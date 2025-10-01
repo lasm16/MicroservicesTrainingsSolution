@@ -2,7 +2,7 @@
 
 namespace AchievementsApi.BLL.RewardStrategies
 {
-    public class AchievementsStrategyFactory
+    public class RewardStrategyFactory
     {
         public static IAchievementRewardCalculator? CreateStrategy(DataAccess.Enums.AchievementType type)
         {
