@@ -1,5 +1,4 @@
 ﻿using AchievementsApi.BLL.Abstractions;
-using YamlDotNet.Core.Tokens;
 
 namespace AchievementsApi.BLL.RewardStrategies
 {
