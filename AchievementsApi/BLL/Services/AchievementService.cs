@@ -1,12 +1,15 @@
-﻿using AchievementsApi.BLL.DTO;
+﻿using AchievementsApi.BLL.Abstractions;
+using AchievementsApi.BLL.DTO;
+using AchievementsApi.BLL.DTO.Requests;
 using AchievementsApi.BLL.Helpers;
-using AchievementsApi.Repositores;
+using AchievementsApi.BLL.RewardStrategies;
 
 namespace AchievementsApi.BLL.Services
 {
     public class AchievementService(IAchievementRepository achievementRepository) : IAchievementService
     {
         private readonly IAchievementRepository _achievementRepository = achievementRepository;
+        private IAchievementRewardCalculator? _rewardCalculator;
 
         public async Task<List<AchievementDto>> GetAllByUserIdAsync(int userId, CancellationToken cancellationToken)
         {
@@ -30,8 +33,10 @@ namespace AchievementsApi.BLL.Services
         }
         public async Task<bool> CreateAsync(AchievementRequest request, CancellationToken cancellationToken)
         {
-            var entity = AchievementMapper.MapDtoToEntity(request);
-            return await _achievementRepository.AddAsync(entity, cancellationToken);
+            var achievement = AchievementMapper.MapDtoToEntity((AchievementCreateRequest)request);
+            SelectRewardStrategy(achievement);
+            _rewardCalculator!.CalculateReward(achievement);
+            return await _achievementRepository.AddAsync(achievement, cancellationToken);
         }
 
         public Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
@@ -39,10 +44,27 @@ namespace AchievementsApi.BLL.Services
             return _achievementRepository.DeleteAsync(id, cancellationToken);
         }
 
-        public Task<bool> UpdateAsync(AchievementDto achievement, CancellationToken cancellationToken)
+        public Task<bool> UpdateAsync(AchievementRequest request, CancellationToken cancellationToken)
         {
-            var entity = AchievementMapper.MapDtoToEntity(achievement);
-            return _achievementRepository.UpdateAsync(entity, cancellationToken);
+            var achievement = AchievementMapper.MapDtoToEntity((AchievementUpdateRequest)request);
+            SelectRewardStrategy(achievement);
+            _rewardCalculator!.CalculateReward(achievement);
+            return _achievementRepository.UpdateAsync(achievement, cancellationToken);
+        }
+
+        private void SelectRewardStrategy(DataAccess.Models.Achievement achievement)
+        {
+            switch (achievement.Type)
+            {
+                case DataAccess.Enums.AchievementType.Running:
+                    _rewardCalculator = new RunningRewardCalculator();
+                    break;
+                case DataAccess.Enums.AchievementType.StrengthTraining:
+                    _rewardCalculator = new StrengthTrainingRewardCalculator();
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
