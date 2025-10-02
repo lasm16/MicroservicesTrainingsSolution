@@ -1,6 +1,6 @@
-﻿namespace NutritionsApi.BLL
+﻿namespace NutritionsApi.BLL.DTO.RequestDto
 {
-    public class NutritionDto
+    public class CreateNutritionRequestDto
     {
         public int UserId { get; set; }
         public string? Description { get; set; }

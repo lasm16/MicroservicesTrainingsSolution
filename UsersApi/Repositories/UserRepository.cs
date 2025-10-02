@@ -1,40 +1,50 @@
 ﻿using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using UsersApi.BLL;
 
 namespace UsersApi.Repositories
 {
     public class UserRepository(DataAccess.AppContext context) : IUserRepository
     {
-        public Task<List<User>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
         }
 
-        public async Task<User> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            return await context.Users.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            return await context.Users
+                .Where(u => !u.IsDeleted)
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task AddAsync(UserDto userDto, CancellationToken cancellationToken = default)
+        public async Task CreatedAsync(User user, CancellationToken cancellationToken = default)
         {
-            var user = new User
-            {
-                Name = userDto.Name,
-                Email = userDto.Email,
-            };
             context.Users.Add(user);
+            user.Created = DateTime.UtcNow;
             await context.SaveChangesAsync(cancellationToken);
         }
 
-        public Task UpdateAsync(UserDto user, CancellationToken cancellationToken = default)
+        public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            context.Users.Update(user);
+            user.Updated=DateTime.UtcNow;
+            await context.SaveChangesAsync(cancellationToken);
         }
 
-        public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var user = await context.Users.FindAsync([id], cancellationToken);
+            if (user != null && !user.IsDeleted)
+            {
+                user.IsDeleted = true;
+                user.Updated = DateTime.UtcNow;
+
+                context.Users.Update(user);
+                await context.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            return false;
         }
     }
 }

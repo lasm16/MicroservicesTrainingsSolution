@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using UsersApi.BLL.Mapper;
 using UsersApi.BLL.Services;
 using UsersApi.Repositories;
 
@@ -15,12 +16,13 @@ namespace UsersApi
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddScoped<UserMapper>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddDbContext<DataAccess.AppContext>(x =>
-            {
-                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=TrainingsDb;");
-            });
+            builder.Services.AddScoped<IUserService,UserService>();            
+           
+            builder.Services.AddDbContext<DataAccess.AppContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("TrainingsDb"))
+);
 
             var app = builder.Build();
 

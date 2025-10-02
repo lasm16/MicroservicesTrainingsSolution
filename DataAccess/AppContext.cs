@@ -25,6 +25,8 @@ namespace DataAccess
 
             modelBuilder.Entity<User>().HasKey(x => x.Id);
             modelBuilder.Entity<User>().Property(x => x.Name).HasMaxLength(140);
+
+            modelBuilder.Entity<Achievement>().HasKey(x => x.Id);
             base.OnModelCreating(modelBuilder);
         }
     }

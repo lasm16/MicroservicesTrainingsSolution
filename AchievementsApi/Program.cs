@@ -1,3 +1,6 @@
+using AchievementsApi.BLL.Services;
+using AchievementsApi.Repositores;
+using Microsoft.EntityFrameworkCore;
 
 namespace AchievementsApi
 {
@@ -7,15 +10,23 @@ namespace AchievementsApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
+            builder.Services.AddScoped<IAchievementService, AchievementService>();
+            builder.Services.AddDbContext<DataAccess.AppContext>(x =>
+            {
+                var configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+                var configurationString = configuration.GetConnectionString("DefaultConnection");
+                x.UseNpgsql(configurationString);
+                x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
@@ -26,12 +37,8 @@ namespace AchievementsApi
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.Run();
         }
     }

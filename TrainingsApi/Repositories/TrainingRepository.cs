@@ -1,42 +1,43 @@
 ﻿using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 using TrainingsApi.BLL;
 
 namespace TrainingsApi.Repositories
 {
     public class TrainingRepository(DataAccess.AppContext context) : ITrainingRepository
     {
-        public Task<List<Training>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<List<Training>> GetAllAsync(int userId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await context.Trainings
+                .Where(t => !t.IsDeleted)
+                .Where(t=> t.UserId == userId)
+                .ToListAsync(cancellationToken);
         }
 
-        public Task<Training> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<Training?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return await context.Trainings
+                .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, cancellationToken);
         }
 
-        public async Task AddAsync(TrainingDto trainingDto, CancellationToken cancellationToken = default)
+        public async Task AddAsync(Training training, CancellationToken cancellationToken = default)
         {
-            var training = new Training
-            {
-                UserId = trainingDto.UserId,
-                Description = trainingDto.Description,
-                DurationInMinutes = trainingDto.DurationInMinutes,
-                IsCompleted = trainingDto.IsCompleted,
-                Date = trainingDto.Date
-            };
-            context.Trainings.Add(training);
-            await context.SaveChangesAsync();
+            await context.Trainings.AddAsync(training, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
-        public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task UpdateAsync(Training training, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            context.Trainings.Update(training);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
-        public Task UpdateAsync(TrainingDto training, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(Training training, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            training.IsDeleted = true;
+            training.Updated = DateTime.UtcNow;
+            context.Trainings.Update(training);
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 }
