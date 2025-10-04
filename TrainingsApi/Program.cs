@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TrainingsApi.BLL.Services;
 using TrainingsApi.Repositories;
 using UsersApi.BLL.Services;
 using UsersApi.Repositories;
-using NSwag.AspNetCore;
 
 namespace TrainingsApi
 {
