@@ -43,5 +43,25 @@ namespace TrainingsApi.Controllers
             await trainingService.DeleteAsync(id);
             return NoContent();
         }
+        [HttpPost("{id:int}/start")]
+        public async Task<IActionResult> StartTrainingAsync([FromRoute] int id)
+        {
+            await trainingService.StartTrainingAsync(id);
+            return NoContent();
+        }
+
+        [HttpPost("{id:int}/complete")]
+        public async Task<IActionResult> CompleteTrainingAsync([FromRoute] int id)
+        {
+            await trainingService.CompleteTrainingAsync(id);
+            return NoContent();
+        }
+
+        [HttpPost("{id:int}/cancel")]
+        public async Task<IActionResult> CancelTrainingAsync([FromRoute] int id)
+        {
+            await trainingService.CancelTrainingAsync(id);
+            return NoContent();
+        }
     }
 }
