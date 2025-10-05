@@ -17,9 +17,9 @@ namespace TrainingsApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTrainingsAsync()
+        public async Task<IActionResult> GetAllTrainingsAsync([FromRoute] int id)
         {
-            var result = await trainingService.GetAllAsync();
+            var result = await trainingService.GetAllAsync(id);
             return Ok(result);
         }
 
