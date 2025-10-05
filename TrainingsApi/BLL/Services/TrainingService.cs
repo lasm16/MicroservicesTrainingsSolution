@@ -49,6 +49,7 @@ namespace TrainingsApi.BLL.Services
 
             await repository.DeleteAsync(training, cancellationToken);
         }
+
         public async Task StartTrainingAsync(int id, CancellationToken cancellationToken = default)
         {
             var training = await repository.GetByIdAsync(id, cancellationToken);
