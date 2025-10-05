@@ -1,6 +1,6 @@
 ﻿using DataAccess.Models;
 
-namespace AchievementsApi.Repositores
+namespace AchievementsApi.BLL.Abstractions
 {
     public interface IAchievementRepository
     {
