@@ -1,10 +1,9 @@
 ﻿namespace TrainingsApi.BLL.States
 {
-    public class PlannedState
+    public class PlannedState: ITrainingState
     {
         public void Start(TrainingContext context)
         {
-            context.Training.IsCompleted = false;
             context.State = new InProgressState();
         }
 

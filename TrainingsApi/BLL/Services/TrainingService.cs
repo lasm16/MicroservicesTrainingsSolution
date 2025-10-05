@@ -80,6 +80,7 @@ namespace TrainingsApi.BLL.Services
             TrainingMapper.MarkDeleted(entity, dto);
             await repository.UpdateAsync(entity, cancellationToken);
         }
+
         public async Task StartTrainingAsync(int id, CancellationToken cancellationToken = default)
         {
             var training = await repository.GetByIdAsync(id, cancellationToken);
