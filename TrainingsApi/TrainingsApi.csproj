@@ -17,8 +17,4 @@
     <ProjectReference Include="..\UsersApi\UsersApi.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="State\Abstractions\" />
-  </ItemGroup>
-
 </Project>
