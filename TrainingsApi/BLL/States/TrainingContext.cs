@@ -16,9 +16,9 @@ namespace TrainingsApi.BLL.States
         {
             return status switch
             {
-                "Planned" => new PlannedState(),
-                "InProgress" => new InProgressState(),
-                "Completed" => new CompletedState(),
+                "Planned" => new TrainingPlannedState(),
+                "InProgress" => new TrainingInProgressState(),
+                "Completed" => new TrainingCompletedState(),
                 "Cancelled" => new TrainingCancelledState(),
                 _ => throw new ArgumentException($"Unknown status: {status}")
             };

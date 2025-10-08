@@ -1,6 +1,6 @@
 ﻿namespace TrainingsApi.BLL.States
 {
-    public class InProgressState: ITrainingState
+    public class TrainingInProgressState: ITrainingState
     {
         public void Start(TrainingContext context)
         {
@@ -9,7 +9,7 @@
 
         public void Complete(TrainingContext context)
         {
-            context.State = new CompletedState();
+            context.State = new TrainingCompletedState();
         }
 
         public void Cancel(TrainingContext context)
