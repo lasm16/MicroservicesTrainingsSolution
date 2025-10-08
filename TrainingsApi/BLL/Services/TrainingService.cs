@@ -31,7 +31,25 @@ namespace TrainingsApi.BLL.Services
             if (training is null)
                 throw new KeyNotFoundException($"Training with id {dto.Id} not found");
 
+            var context = new TrainingContext(training);
+
+            try
+            {
+                if (dto.Status == "InProgress")
+                    context.Start();
+                else if (dto.Status == "Completed")
+                    context.Complete();
+                else if (dto.Status == "Cancelled")
+                    context.Cancel();
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException($"Cannot transition training to status '{dto.Status}': {ex.Message}");
+            }
+
+            // Обновляем остальные поля
             TrainingMapper.UpdateEntity(training, dto);
+
             await repository.UpdateAsync(training, cancellationToken);
         }
         
