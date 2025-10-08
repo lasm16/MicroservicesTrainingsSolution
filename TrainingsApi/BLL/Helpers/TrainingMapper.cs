@@ -13,7 +13,6 @@ namespace TrainingsApi.BLL.Helpers
                 Description = training.Description,
                 Date = training.Date,
                 DurationInMinutes = training.DurationInMinutes,
-                //IsCompleted = training.IsCompleted
                 Status = training.Status
             };
         }
@@ -32,7 +31,6 @@ namespace TrainingsApi.BLL.Helpers
                 Description = dto.Description,
                 Date = dto.Date,
                 DurationInMinutes = dto.DurationInMinutes,
-                //IsCompleted = dto.IsCompleted,
                 Status = dto.Status,
                 Created = DateTime.UtcNow,
                 Updated = DateTime.UtcNow,
@@ -45,7 +43,6 @@ namespace TrainingsApi.BLL.Helpers
             training.Description = dto.Description;
             training.Date = dto.Date;
             training.DurationInMinutes = dto.DurationInMinutes;
-            //training.IsCompleted = dto.IsCompleted;
             training.Status = dto.Status;
             training.Updated = DateTime.UtcNow;
         }
