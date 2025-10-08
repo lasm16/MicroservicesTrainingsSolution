@@ -14,7 +14,7 @@
 
         public void Cancel(TrainingContext context)
         {
-            context.State = new CancelledState();
+            context.State = new TrainingCancelledState();
         }
     }
 }

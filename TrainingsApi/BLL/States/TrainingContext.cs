@@ -19,7 +19,7 @@ namespace TrainingsApi.BLL.States
                 "Planned" => new PlannedState(),
                 "InProgress" => new InProgressState(),
                 "Completed" => new CompletedState(),
-                "Cancelled" => new CancelledState(),
+                "Cancelled" => new TrainingCancelledState(),
                 _ => throw new ArgumentException($"Unknown status: {status}")
             };
         }
