@@ -7,8 +7,5 @@
         Task CreateAsync(TrainingDto dto, CancellationToken cancellationToken = default);
         Task UpdateAsync(TrainingDto dto, CancellationToken cancellationToken = default);
         Task DeleteAsync(int id, CancellationToken cancellationToken = default);
-        Task StartTrainingAsync(int id, CancellationToken cancellationToken = default);
-        Task CompleteTrainingAsync(int id, CancellationToken cancellationToken = default);
-        Task CancelTrainingAsync(int id, CancellationToken cancellationToken = default);
     }
 }

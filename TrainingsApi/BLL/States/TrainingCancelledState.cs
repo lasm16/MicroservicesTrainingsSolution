@@ -1,6 +1,6 @@
 ﻿namespace TrainingsApi.BLL.States
 {
-    public class CancelledState: ITrainingState
+    public class TrainingCancelledState: ITrainingState
     {
         public void Start(TrainingContext context)
         {
