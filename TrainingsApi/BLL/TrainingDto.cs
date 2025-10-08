@@ -7,6 +7,6 @@
         public string? Description { get; set; }
         public DateTime Date { get; set; }
         public double DurationInMinutes { get; set; }
-        public bool IsCompleted { get; set; }
+        public string? Status { get; set; }
     }
 }
