@@ -1,4 +1,5 @@
 ﻿using DataAccess.Models;
+using UsersApi.BLL.Models;
 
 namespace UsersApi.BLL.Mapper
 {
@@ -49,14 +50,14 @@ namespace UsersApi.BLL.Mapper
         {
             return obj == null;
         }
-        public static UserDto MapToUserDto(int id,string name, string surname, string email)
+        public static UserDto MapToUserDto(UserRequest request )
         {
             return new UserDto
             {
-                Id = id,
-                Name = name,
-                Surname = surname,
-                Email = email
+                Id = request.Id,
+                Name = request.Name.Trim(),
+                Surname = request.Surname.Trim(),
+                Email = request.Email.Trim()
             };
         }
     }
