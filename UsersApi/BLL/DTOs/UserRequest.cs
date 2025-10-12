@@ -16,6 +16,7 @@ namespace UsersApi.BLL.Models
         public string Surname { get; set; } = string.Empty;
 
         [Required(AllowEmptyStrings = false)]
+        [EmailAddress]
         [StringLength(256)]
         public string Email { get; set; } = string.Empty;
     }

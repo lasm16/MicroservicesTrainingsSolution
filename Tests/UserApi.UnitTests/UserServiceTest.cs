@@ -1,4 +1,5 @@
 ﻿using DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -114,7 +115,21 @@ namespace Tests.UserApi.UnitTests
 
             await _service.CreateAsync(request, TestContext.CancellationToken);
         }
+        [TestMethod]
+        public async Task CreateAsync_WithExistingId_ThrowsException()
+        {
+            var request = new UserRequest { Id = 1, Name = "Существующий", Surname = "Пользователь", Email = "existing@example.com" };
+            
+            _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+                          .ThrowsAsync(new DbUpdateException("Ошибка обновления БД", new InvalidOperationException("Нарушение уникальности первичного ключа.")));
+          
+            await Assert.ThrowsExactlyAsync<DbUpdateException>(async () =>
+            {
+                await _service.CreateAsync(request, TestContext.CancellationToken);
+            });
 
+            _mockRepository.Verify(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
         [TestMethod]
         public async Task DeleteAsync_NegativeId_ReturnsFalse()
         {

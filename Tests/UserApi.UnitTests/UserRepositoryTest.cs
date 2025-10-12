@@ -126,14 +126,15 @@ namespace Tests.UserApi.UnitTests
         [TestMethod]
         public async Task CreatedAsync_SetsCreatedToUtcNow()
         {
-            var now = DateTime.UtcNow;
+            var beforeCall = DateTime.UtcNow;
             var user = new User { Name = "Дата" };
             await repository.CreatedAsync(user, TestContext.CancellationToken);
+            var afterCall = DateTime.UtcNow;
 
-            Assert.IsLessThan(now, user.Created);
+            Assert.IsTrue(user.Created >= beforeCall && user.Created <= afterCall);
         }
 
-            [TestMethod]
+        [TestMethod]
         public async Task UpdateAsync_SetsUpdatedToUtcNow()
         {
             var user = new User { Id = 1, Name = "Старое", IsDeleted = false };

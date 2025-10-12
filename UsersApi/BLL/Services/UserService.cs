@@ -24,7 +24,7 @@ namespace UsersApi.BLL.Services
 
         public async Task<UserDto> CreateAsync(UserRequest request, CancellationToken cancellationToken)
         {
-            var userDto = UserMapper.MapToUserDto(request.Id,request.Name.Trim(), request.Surname.Trim(), request.Email.Trim());
+            var userDto = UserMapper.MapToUserDto(request);
 
             var userEntity = UserMapper.ToEntity(userDto);
 
@@ -34,12 +34,8 @@ namespace UsersApi.BLL.Services
         }
 
         public async Task<bool> UpdateAsync(UserRequest request, CancellationToken cancellationToken)
-        {
-            if (request.Id <= 0)
-            {
-                return false;
-            }
-            var userDto = UserMapper.MapToUserDto(request.Id,request.Name.Trim(), request.Surname.Trim(), request.Email.Trim());
+        {            
+            var userDto = UserMapper.MapToUserDto(request);
             
 
             var existingUser = await userRepository.GetByIdAsync(userDto.Id, cancellationToken);
