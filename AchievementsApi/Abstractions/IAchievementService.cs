@@ -1,7 +1,7 @@
 ﻿using AchievementsApi.BLL.DTO;
 using AchievementsApi.BLL.DTO.Requests;
 
-namespace AchievementsApi.BLL.Abstractions
+namespace AchievementsApi.Abstractions
 {
     public interface IAchievementService
     {

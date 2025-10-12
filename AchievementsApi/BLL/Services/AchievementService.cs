@@ -1,4 +1,4 @@
-﻿using AchievementsApi.BLL.Abstractions;
+﻿using AchievementsApi.Abstractions;
 using AchievementsApi.BLL.DTO;
 using AchievementsApi.BLL.DTO.Requests;
 using AchievementsApi.BLL.Helpers;
@@ -31,25 +31,51 @@ namespace AchievementsApi.BLL.Services
             }
             return AchievementMapper.MapEntityToDto(achievement);
         }
+
         public async Task<bool> CreateAsync(AchievementRequest request, CancellationToken cancellationToken)
         {
-            var achievement = AchievementMapper.MapDtoToEntity((AchievementCreateRequest)request);
-            _rewardCalculator = RewardStrategyFactory.CreateStrategy(achievement.Type);
-            _rewardCalculator!.CalculateReward(achievement);
+            var achievementDto = AchievementMapper.MapRequestToDto((AchievementCreateRequest)request);
+            CalculateReward(achievementDto);
+            var achievement = AchievementMapper.MapDtoToEntity(achievementDto);
             return await _achievementRepository.AddAsync(achievement, cancellationToken);
         }
 
-        public Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
+        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
         {
-            return _achievementRepository.DeleteAsync(id, cancellationToken);
+            var achievement = await _achievementRepository.GetByIdAsync(id, cancellationToken);
+            if (achievement == null)
+            {
+                Console.WriteLine($"Не найдено достижение с id={id}!");
+                return false;
+            }
+            return await _achievementRepository.DeleteAsync(achievement, cancellationToken);
         }
 
-        public Task<bool> UpdateAsync(AchievementRequest request, CancellationToken cancellationToken)
+        public async Task<bool> UpdateAsync(AchievementRequest request, CancellationToken cancellationToken)
         {
-            var achievement = AchievementMapper.MapDtoToEntity((AchievementUpdateRequest)request);
-            _rewardCalculator = RewardStrategyFactory.CreateStrategy(achievement.Type);
-            _rewardCalculator!.CalculateReward(achievement);
-            return _achievementRepository.UpdateAsync(achievement, cancellationToken);
+            var achievementFromRequestDto = AchievementMapper.MapRequestToDto((AchievementUpdateRequest)request);
+            var achievementFromRepository = await _achievementRepository.GetByIdAsync(achievementFromRequestDto.Id, cancellationToken);
+            if (achievementFromRepository == null)
+            {
+                Console.WriteLine($"Не найдено достижение с id={achievementFromRequestDto.Id}!");
+                return false;
+            }
+            CalculateReward(achievementFromRequestDto);
+            var achievement = AchievementMapper.MapDtoToEntity(achievementFromRequestDto);
+            return await _achievementRepository.UpdateAsync(achievement, cancellationToken);
+        }
+
+        private void CalculateReward(AchievementDto achievement)
+        {
+            try
+            {
+                _rewardCalculator = RewardStrategyFactory.CreateStrategy(achievement.Type);
+                _rewardCalculator!.CalculateReward(achievement);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Не удалось расчитать награду! {ex.Message}");
+            }
         }
     }
 }
