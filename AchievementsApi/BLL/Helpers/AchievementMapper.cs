@@ -39,27 +39,27 @@ namespace AchievementsApi.BLL.Helpers
             };
         }
 
-        internal static Achievement MapDtoToEntity(AchievementUpdateRequest achievementDto)
+        internal static AchievementDto MapRequestToDto(AchievementCreateRequest request)
         {
-            return new Achievement
-            {
-                Id = achievementDto.Id,
-                UserId = achievementDto.UserId,
-                AchievedDate = achievementDto.AchievedDate,
-                Value = achievementDto.Value,
-                Type = achievementDto.Type,
-                IsDeleted = achievementDto.IsDeleted,
-            };
-        }
-
-        internal static Achievement MapDtoToEntity(AchievementCreateRequest request)
-        {
-            return new Achievement
+            return new AchievementDto
             {
                 UserId = request.UserId,
                 AchievedDate = request.AchievedDate,
                 Value = request.Value,
                 Type = request.Type,
+            };
+        }
+
+        internal static AchievementDto MapRequestToDto(AchievementUpdateRequest request)
+        {
+            return new AchievementDto
+            {
+                Id = request.Id,
+                UserId = request.UserId,
+                AchievedDate = request.AchievedDate,
+                Value = request.Value,
+                Type = request.Type,
+                IsDeleted = request.IsDeleted,
             };
         }
     }

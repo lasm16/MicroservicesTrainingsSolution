@@ -1,4 +1,4 @@
-﻿using AchievementsApi.BLL.Abstractions;
+﻿using AchievementsApi.Abstractions;
 using AchievementsApi.BLL.DTO.Requests;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +14,7 @@ namespace AchievementsApi.Controllers
         public async Task<IActionResult> GetAchievementAsync([FromRoute] int id)
         {
             var response = await _achievementService.GetByIdAsync(id);
-            return response == null ? BadRequest("Something went wrong...") : Ok(response);
+            return response == null ? BadRequest($"Не найдено достижение с id={id}!") : Ok(response);
         }
 
         [HttpGet("get-all/{userId:int}")]
@@ -28,21 +28,21 @@ namespace AchievementsApi.Controllers
         public async Task<IActionResult> CreateAchievementAsync([FromBody] AchievementCreateRequest request)
         {
             var result = await _achievementService.CreateAsync(request);
-            return result ? Ok("Created") : BadRequest("Something went wrong...");
+            return result ? Ok("Created") : BadRequest("Не удалось создать достижение");
         }
 
         [HttpPut("update")]
         public async Task<IActionResult> UpdateAchievementAsync([FromBody] AchievementUpdateRequest request)
         {
             var result = await _achievementService.UpdateAsync(request);
-            return result ? Ok("Updated") : BadRequest("Something went wrong...");
+            return result ? Ok("Updated") : BadRequest($"Не найдено достижение с id={request.Id}!");
         }
 
         [HttpDelete("delete/{id:int}")]
         public async Task<IActionResult> DeleteAchievementAsync([FromRoute] int id)
         {
             var result = await _achievementService.DeleteAsync(id);
-            return result ? Ok("Deleted") : BadRequest("Something went wrong...");
+            return result ? Ok("Deleted") : BadRequest($"Не найдено достижение с id={id}!");
         }
     }
 }

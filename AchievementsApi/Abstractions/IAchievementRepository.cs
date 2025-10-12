@@ -1,6 +1,6 @@
 ﻿using DataAccess.Models;
 
-namespace AchievementsApi.BLL.Abstractions
+namespace AchievementsApi.Abstractions
 {
     public interface IAchievementRepository
     {
@@ -8,6 +8,6 @@ namespace AchievementsApi.BLL.Abstractions
         Task<List<Achievement>> GetAllAsync(int userId, CancellationToken cancellationToken = default);
         Task<bool> AddAsync(Achievement achievement, CancellationToken cancellationToken = default);
         Task<bool> UpdateAsync(Achievement achievement, CancellationToken cancellationToken = default);
-        Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+        Task<bool> DeleteAsync(Achievement achievement, CancellationToken cancellationToken = default);
     }
 }

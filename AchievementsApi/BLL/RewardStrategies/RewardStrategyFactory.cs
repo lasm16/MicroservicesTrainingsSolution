@@ -1,4 +1,4 @@
-﻿using AchievementsApi.BLL.Abstractions;
+﻿using AchievementsApi.Abstractions;
 
 namespace AchievementsApi.BLL.RewardStrategies
 {
