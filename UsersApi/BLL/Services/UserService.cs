@@ -28,7 +28,7 @@ namespace UsersApi.BLL.Services
             var existingUser = await userRepository.GetByIdAsync(request.Id, cancellationToken);
             if (existingUser != null)
             {                
-                throw new InvalidOperationException($"Пользователь с Id {request.Id} уже существует.");
+                throw new InvalidOperationException($"Пользователь с Id = {request.Id} уже существует.");
             }
             var userDto = UserMapper.MapToUserDto(request);
 
