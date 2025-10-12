@@ -10,7 +10,7 @@ namespace DataAccess
         public DbSet<Training> Trainings { get; set; }
         public DbSet<User> Users { get; set; }
 
-        public AppContext(DbContextOptions<AppContext> options) : base(options)
+        public AppContext(DbContextOptions options) : base(options)
         {
             Database.EnsureCreated();
         }
