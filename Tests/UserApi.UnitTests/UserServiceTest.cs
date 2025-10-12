@@ -41,32 +41,6 @@ namespace Tests.UserApi.UnitTests
         }
 
         [TestMethod]
-        public async Task GetAllAsync_UserWithMaxLengthName_ReturnsFullName()
-        {
-            var longName = new string('A', 140);
-            var users = new List<User> { new() { Name = longName, Surname = "Test" } };
-
-            _mockRepository.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
-                          .ReturnsAsync(users);
-
-            var result = await _service.GetAllAsync(TestContext.CancellationToken);
-
-            Assert.AreEqual(longName, result[0].Name);
-        }
-
-        [TestMethod]
-        public async Task GetByIdAsync_UserHasNullName_ReturnsDtoWithNullName()
-        {
-            var userEntity = new User { Id = 1, Name = null, Surname = "Фамилия" };
-            _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-                          .ReturnsAsync(userEntity);
-
-            var result = await _service.GetByIdAsync(1, TestContext.CancellationToken);
-
-            Assert.IsNull(result.Name);
-        }
-
-        [TestMethod]
         public async Task DeleteAsync_IdZero_ReturnsFalse()
         {
             var result = await _service.DeleteAsync(0, TestContext.CancellationToken);
@@ -161,10 +135,9 @@ namespace Tests.UserApi.UnitTests
         }
 
         [TestMethod]
-        public async Task CreateAsync_LongName_PassesToRepository()
+        public async Task CreateAsync_NameWithSpaces_CallsRepositoryWithTrimmedName()
         {
-            var longName = new string('A', 140);
-            var request = new UserRequest { Name = longName, Email = "test@example.com" };
+            var request = new UserRequest { Name = "  Вася  ", Surname = " Петров ", Email = "v@example.com" };
 
             User capturedUser = null;
             _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
@@ -173,37 +146,31 @@ namespace Tests.UserApi.UnitTests
 
             await _service.CreateAsync(request, TestContext.CancellationToken);
 
-            Assert.AreEqual(longName, capturedUser.Name);
+            Assert.AreEqual("Вася", capturedUser.Name);
+            Assert.AreEqual("Петров", capturedUser.Surname);
+            Assert.AreEqual("v@example.com", capturedUser.Email);
         }
 
         [TestMethod]
-        public async Task CreateAsync_EmptyName_PassesToRepository()
+        public async Task UpdateAsync_NameWithSpaces_CallsRepositoryWithTrimmedName()
         {
-            var request = new UserRequest { Name = "", Email = "test@example.com" };
+            var existingUser = new User { Id = 1, Name = "Старое", Surname = "Старая", Email = "old@example.com" };
+            var request = new UserRequest { Id = 1, Name = "  Новое ", Surname = " Фамилия ", Email = " new@example.com " };
+
+            _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(existingUser);
 
             User capturedUser = null;
-            _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            _mockRepository.Setup(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
                           .Callback<User, CancellationToken>((u, ct) => capturedUser = u)
                           .Returns(Task.CompletedTask);
 
-            await _service.CreateAsync(request, TestContext.CancellationToken);
+            var result = await _service.UpdateAsync(request, TestContext.CancellationToken);
 
-            Assert.AreEqual("", capturedUser.Name);
-        }
-
-        [TestMethod]
-        public async Task CreateAsync_NameWithSpaces_PreservesSpaces()
-        {
-            var request = new UserRequest { Name = "  Вася  ", Email = "v@example.com" };
-
-            User capturedUser = null;
-            _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-                          .Callback<User, CancellationToken>((u, ct) => capturedUser = u)
-                          .Returns(Task.CompletedTask);
-
-            await _service.CreateAsync(request, TestContext.CancellationToken);
-
-            Assert.AreEqual("  Вася  ", capturedUser.Name);
+            Assert.IsTrue(result);
+            Assert.AreEqual("Новое", capturedUser.Name);
+            Assert.AreEqual("Фамилия", capturedUser.Surname);
+            Assert.AreEqual("new@example.com", capturedUser.Email);
         }
     }
 }

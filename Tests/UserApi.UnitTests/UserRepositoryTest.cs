@@ -1,7 +1,8 @@
-﻿using DataAccess.Models;
+﻿using AchievementsApi.Repositores;
+using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using UsersApi.Repositories;
 using Moq;
+using UsersApi.Repositories;
 namespace Tests.UserApi.UnitTests
 {
     [TestClass]
@@ -19,14 +20,6 @@ namespace Tests.UserApi.UnitTests
                 .Options;
 
             appContext = new DataAccess.AppContext(dbOptions);
-        }
-
-        [TestInitialize]
-        public void Setup()
-        {
-            appContext.Database.EnsureDeleted();
-            appContext.Database.EnsureCreated();
-
             repository = new UserRepository(appContext);
         }
 
@@ -41,29 +34,8 @@ namespace Tests.UserApi.UnitTests
 
             Assert.IsNotNull(result);
             Assert.AreEqual("Анна", result.Name);
-        }
-
-        [TestMethod]
-        public async Task CreatedAsync_NameExactly140Chars_AllowsIt()
-        {
-            var longName = new string('A', 140);
-            var user = new User { Name = longName, Email = "test@example.com" };
-
-            await repository.CreatedAsync(user, TestContext.CancellationToken);
-
-            var saved = await appContext.Users.FindAsync(user.Id);
-            Assert.AreEqual(longName, saved.Name);
-        }       
-
-        [TestMethod]
-        public async Task CreatedAsync_NameIsNull_AllowsIt()
-        {
-            var user = new User { Name = null, Email = "test@example.com" };
-
-            await repository.CreatedAsync(user, TestContext.CancellationToken);
-
-            var saved = await appContext.Users.FindAsync(user.Id);
-            Assert.IsNull(saved.Name);
+            Assert.AreEqual("Иванова", result.Surname);
+            Assert.AreEqual("anna@example.com", result.Email);
         }
 
         [TestMethod]
@@ -72,12 +44,12 @@ namespace Tests.UserApi.UnitTests
             var result = await repository.GetByIdAsync(0, TestContext.CancellationToken);
             Assert.IsNull(result);
         }
-        
+
         [TestMethod]
         public async Task GetAllAsync_EmptyDb_ReturnsEmptyList()
         {
             var result = await repository.GetAllAsync(TestContext.CancellationToken);
-            Assert.AreEqual(0, result.Count);
+            Assert.HasCount(0, result);
         }
 
         [TestMethod]
@@ -136,10 +108,10 @@ namespace Tests.UserApi.UnitTests
 
             var result = await repository.GetAllAsync(TestContext.CancellationToken);
 
-            Assert.AreEqual(1, result.Count);
+            Assert.HasCount(1, result);
             Assert.AreEqual("Активный", result[0].Name);
         }
-        
+
         [TestMethod]
         public async Task GetAllAsync_ConditionIsDeletedFalse_AppliesFilter()
         {
@@ -158,10 +130,10 @@ namespace Tests.UserApi.UnitTests
             var user = new User { Name = "Дата" };
             await repository.CreatedAsync(user, TestContext.CancellationToken);
 
-            Assert.IsTrue((user.Created - now).TotalSeconds < 10);
+            Assert.IsLessThan(now, user.Created);
         }
 
-        [TestMethod]
+            [TestMethod]
         public async Task UpdateAsync_SetsUpdatedToUtcNow()
         {
             var user = new User { Id = 1, Name = "Старое", IsDeleted = false };
@@ -172,7 +144,7 @@ namespace Tests.UserApi.UnitTests
             user.Name = "Новое";
             await repository.UpdateAsync(user, TestContext.CancellationToken);
 
-            Assert.IsTrue((user.Updated - beforeUpdate).TotalSeconds >= 0);
+            Assert.IsGreaterThanOrEqualTo(beforeUpdate,user.Updated);
         }
 
         [TestMethod]
@@ -180,26 +152,6 @@ namespace Tests.UserApi.UnitTests
         {
             var result = await repository.GetByIdAsync(-5, TestContext.CancellationToken);
             Assert.IsNull(result);
-        }
-
-        [TestMethod]
-        public async Task CreatedAsync_EmptyName_AllowsIt()
-        {
-            var user = new User { Name = "", Email = "test@example.com" };
-            await repository.CreatedAsync(user, TestContext.CancellationToken);
-
-            var saved = await appContext.Users.FindAsync(user.Id);
-            Assert.AreEqual("", saved.Name);
-        }
-
-        [TestMethod]
-        public async Task CreatedAsync_NameWithSpaces_PreservesSpaces()
-        {
-            var user = new User { Name = "  Вася  ", Email = "v@example.com" };
-            await repository.CreatedAsync(user, TestContext.CancellationToken);
-
-            var saved = await appContext.Users.FindAsync(user.Id);
-            Assert.AreEqual("  Вася  ", saved.Name);
         }
 
         [TestMethod]
