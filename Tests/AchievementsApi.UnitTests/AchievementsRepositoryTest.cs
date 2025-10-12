@@ -57,14 +57,13 @@ namespace Tests.AchievementsApi.UnitTests
             var achievement = GetAchievement();
             await appContext.Achievements.AddAsync(achievement, TestContext.CancellationToken);
             await appContext.SaveChangesAsync(TestContext.CancellationToken);
+            achievement.Reward = 30m;
+            achievement.Type = DataAccess.Enums.AchievementType.Running;
+            achievement.Value = 15;
+            achievement.UpdatedAt = DateTime.Parse("Jan 1, 2009");
+            var beforeUpdate = DateTime.UtcNow;
 
-            var updated = await appContext.Achievements.FirstOrDefaultAsync(cancellationToken: TestContext.CancellationToken);
-
-            updated!.Reward = 30m;
-            updated.Type = DataAccess.Enums.AchievementType.Running;
-            updated.Value = 15;
-
-            var result = _repository.UpdateAsync(updated, TestContext.CancellationToken).Result;
+            var result = _repository.UpdateAsync(achievement, TestContext.CancellationToken).Result;
             var achievements = appContext.Achievements.ToList();
             var expected = achievements.FirstOrDefault();
 
@@ -75,6 +74,7 @@ namespace Tests.AchievementsApi.UnitTests
             Assert.AreEqual(30m, expected!.Reward);
             Assert.AreEqual(DataAccess.Enums.AchievementType.Running, expected!.Type);
             Assert.AreEqual(15, expected!.Value);
+            Assert.IsGreaterThanOrEqualTo(beforeUpdate, expected.UpdatedAt);
         }
 
         [TestMethod]
