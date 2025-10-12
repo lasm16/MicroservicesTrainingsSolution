@@ -24,6 +24,12 @@ namespace UsersApi.BLL.Services
 
         public async Task<UserDto> CreateAsync(UserRequest request, CancellationToken cancellationToken)
         {
+
+            var existingUser = await userRepository.GetByIdAsync(request.Id, cancellationToken);
+            if (existingUser != null)
+            {                
+                throw new InvalidOperationException($"Пользователь с Id {request.Id} уже существует.");
+            }
             var userDto = UserMapper.MapToUserDto(request);
 
             var userEntity = UserMapper.ToEntity(userDto);

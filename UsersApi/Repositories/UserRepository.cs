@@ -20,6 +20,7 @@ namespace UsersApi.Repositories
 
         public async Task CreatedAsync(User user, CancellationToken cancellationToken = default)
         {            
+            
             context.Users.Add(user);
             user.Created = DateTime.UtcNow;
             await context.SaveChangesAsync(cancellationToken);

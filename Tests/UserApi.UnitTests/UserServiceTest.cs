@@ -116,19 +116,25 @@ namespace Tests.UserApi.UnitTests
             await _service.CreateAsync(request, TestContext.CancellationToken);
         }
         [TestMethod]
-        public async Task CreateAsync_WithExistingId_ThrowsException()
+        public async Task CreateAsync_WithExistingIdInDb_ThrowsException()
         {
-            var request = new UserRequest { Id = 1, Name = "Существующий", Surname = "Пользователь", Email = "existing@example.com" };
-            
+            var request = new UserRequest { Id = 1, Name = "Новый", Surname = "Пользователь", Email = "new@example.com" };
+
+            var existingUser = new User { Id = 1, Name = "Старый", Surname = "Пользователь", Email = "old@example.com" };
+            _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(existingUser);
+
             _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-                          .ThrowsAsync(new DbUpdateException("Ошибка обновления БД", new InvalidOperationException("Нарушение уникальности первичного ключа.")));
-          
-            await Assert.ThrowsExactlyAsync<DbUpdateException>(async () =>
+                          .Returns(Task.CompletedTask);
+
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
             {
                 await _service.CreateAsync(request, TestContext.CancellationToken);
             });
 
-            _mockRepository.Verify(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+            _mockRepository.Verify(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()), Times.Once);
+
+            _mockRepository.Verify(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never());
         }
         [TestMethod]
         public async Task DeleteAsync_NegativeId_ReturnsFalse()
