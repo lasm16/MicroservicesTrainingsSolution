@@ -15,6 +15,7 @@ namespace AchievementsApi
             builder.Services.AddOpenApi();
             builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
             builder.Services.AddScoped<IAchievementService, AchievementService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {
                 var configuration = new ConfigurationBuilder()
