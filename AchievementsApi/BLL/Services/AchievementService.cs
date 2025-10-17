@@ -43,8 +43,8 @@ namespace AchievementsApi.BLL.Services
             var result = await _achievementRepository.AddAsync(achievement, cancellationToken);
             if (result == true)
             {
-                var message = "Получено новое достижение!";
-                await _notificationService.AddNotification(message);
+                var message = $"Получено новое достижение с наградой: {achievement.Reward}";
+                _notificationService.AddNotification(message);
             }
             return result;
         }

@@ -2,6 +2,7 @@
 {
     public interface INotificationService
     {
-        Task AddNotification(string message);
+        void AddNotification(string message);
+        Task ProcessNotificationsAsync();
     }
 }

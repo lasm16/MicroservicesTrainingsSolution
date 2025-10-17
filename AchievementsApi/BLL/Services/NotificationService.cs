@@ -9,7 +9,7 @@ namespace AchievementsApi.BLL.Services
         private readonly ConcurrentQueue<Notification> _notificationQueue = new();
         private readonly SemaphoreSlim _semaphore = new(5);
 
-        public async Task AddNotification(string message)
+        public void AddNotification(string message)
         {
             var notification = new Notification
             {
@@ -18,10 +18,9 @@ namespace AchievementsApi.BLL.Services
 
             Console.WriteLine($"Добавлено уведомление: {message}");
             _notificationQueue.Enqueue(notification);
-            await ProcessNotificationsAsync();
         }
 
-        private async Task ProcessNotificationsAsync()
+        public async Task ProcessNotificationsAsync()
         {
             while (_notificationQueue.TryDequeue(out var notification))
             {
