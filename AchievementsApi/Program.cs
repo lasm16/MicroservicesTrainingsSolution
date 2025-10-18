@@ -15,12 +15,11 @@ namespace AchievementsApi
             builder.Services.AddOpenApi();
             builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
             builder.Services.AddScoped<IAchievementService, AchievementService>();
+            builder.Services.AddSingleton<INotificationService, NotificationService>();
+            builder.Services.AddHostedService<NotificationProcessingService>();
             builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {
-                var configuration = new ConfigurationBuilder()
-                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                    .AddJsonFile("appsettings.json")
-                    .Build();
+                var configuration = GetConfiguration();
                 var configurationString = configuration.GetConnectionString("DefaultConnection");
                 x.UseNpgsql(configurationString);
                 x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
@@ -41,6 +40,14 @@ namespace AchievementsApi
             app.UseAuthorization();
             app.MapControllers();
             app.Run();
+        }
+
+        private static IConfigurationRoot GetConfiguration()
+        {
+            return new ConfigurationBuilder()
+                                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                                .AddJsonFile("appsettings.json")
+                                .Build();
         }
     }
 }

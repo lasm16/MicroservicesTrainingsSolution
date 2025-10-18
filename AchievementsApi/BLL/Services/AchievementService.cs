@@ -6,9 +6,12 @@ using AchievementsApi.BLL.RewardStrategies;
 
 namespace AchievementsApi.BLL.Services
 {
-    public class AchievementService(IAchievementRepository achievementRepository) : IAchievementService
+    public class AchievementService(
+        IAchievementRepository achievementRepository,
+        INotificationService notificationService) : IAchievementService
     {
         private readonly IAchievementRepository _achievementRepository = achievementRepository;
+        private readonly INotificationService _notificationService = notificationService;
         private IAchievementRewardCalculator? _rewardCalculator;
 
         public async Task<List<AchievementDto>> GetAllByUserIdAsync(int userId, CancellationToken cancellationToken)
@@ -37,7 +40,13 @@ namespace AchievementsApi.BLL.Services
             var achievementDto = AchievementMapper.MapRequestToDto((AchievementCreateRequest)request);
             CalculateReward(achievementDto);
             var achievement = AchievementMapper.MapDtoToEntity(achievementDto);
-            return await _achievementRepository.AddAsync(achievement, cancellationToken);
+            var result = await _achievementRepository.AddAsync(achievement, cancellationToken);
+            if (result == true)
+            {
+                var message = $"Получено новое достижение с наградой: {achievement.Reward}";
+                _notificationService.AddNotification(message);
+            }
+            return result;
         }
 
         public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
