@@ -33,6 +33,8 @@ namespace Tests.NutritionsApi.UnitTests
             _service = new NutritionService(_mockRepository.Object, _mockMapper.Object, _mockDtoFactory.Object);
         }
 
+        #region GetByIdAsync
+
         [TestMethod]
         public async Task GetByIdAsync_ExistingId_ReturnsMappedDto()
         {
@@ -61,22 +63,27 @@ namespace Tests.NutritionsApi.UnitTests
         }
 
         [TestMethod]
-        public async Task GetByIdAsync_DeletedNutrition_ReturnsDtoWithIsDeletedTrue()
+        public async Task GetByIdAsync_DeletedNutrition_ThrowsNotFoundException()
         {
-            var deletedNutrition = new Nutrition { Id = 1, UserId = 2, Description = "Deleted", Calories = 100, IsDeleted = true };
-            var expectedDto = new NutritionDetailsResponseDto { NutritionId = 1, UserId = 2, Description = "Deleted", Calories = 100, IsDeleted = true };
-
+            
             _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-                          .ReturnsAsync(deletedNutrition);
-            _mockDtoFactory.Setup(f => f.GenerateDetailsResponse(1, 2, "Deleted", 100, true))
-                          .Returns(expectedDto);
+                          .ReturnsAsync((Nutrition)null);
 
-            var result = await _service.GetByIdAsync(1, TestContext.CancellationToken);
+            await Assert.ThrowsExactlyAsync<NotFoundException>(async () =>
+                await _service.GetByIdAsync(1, TestContext.CancellationToken));
 
-            Assert.IsNotNull(result);
-            Assert.AreEqual(expectedDto, result);
+            _mockDtoFactory.Verify(f => f.GenerateDetailsResponse(
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<string>(),
+                It.IsAny<double>(),
+                It.IsAny<bool>()),
+                Times.Never());
         }
 
+        #endregion
+
+        #region GetAllAsync
 
         [TestMethod]
         public async Task GetAllAsync_UserHasNutritions_ReturnsMappedDtoList()
@@ -99,7 +106,7 @@ namespace Tests.NutritionsApi.UnitTests
 
             var result = await _service.GetAllAsync(userId, TestContext.CancellationToken);
 
-            Assert.AreEqual(2, result.Count);
+            Assert.HasCount(2, result);
             Assert.AreEqual(expectedDto1, result[0]);
             Assert.AreEqual(expectedDto2, result[1]);
         }
@@ -112,19 +119,27 @@ namespace Tests.NutritionsApi.UnitTests
 
             var result = await _service.GetAllAsync(999, TestContext.CancellationToken);
 
-            Assert.AreEqual(0, result.Count);
+            Assert.IsEmpty(result);
         }
+
+        #endregion
+
+        #region CreateAsync
 
         [TestMethod]
         public async Task CreateAsync_ValidRequest_CallsRepositoryAndReturnsDto()
         {
             var requestDto = new CreateNutritionRequestDto { UserId = 1, Description = "New Meal", Calories = 200 };
-            var expectedDto = new NutritionDetailsResponseDto {
+            var expectedDto = new NutritionDetailsResponseDto
+            {
                 NutritionId = 999,
                 UserId = 1,
                 Description = "New Meal",
                 Calories = 200,
-                IsDeleted = false };
+                IsDeleted = false
+            };
+
+            var expectedNutritionForRepo = new Nutrition { UserId = 1, Description = "New Meal", Calories = 200 };
 
             _mockMapper.Setup(m => m.Map<CreateNutritionRequestDto, Nutrition>(requestDto, It.IsAny<Nutrition>()))
                        .Callback<CreateNutritionRequestDto, Nutrition>((dto, dest) =>
@@ -133,7 +148,7 @@ namespace Tests.NutritionsApi.UnitTests
                            dest.Description = dto.Description;
                            dest.Calories = dto.Calories;
                        })
-                       .Returns<CreateNutritionRequestDto, Nutrition>((dto, dest) => dest); 
+                       .Returns<CreateNutritionRequestDto, Nutrition>((dto, dest) => dest);
 
             Nutrition capturedModelForRepo = null;
             _mockRepository.Setup(r => r.CreateAsync(It.IsAny<Nutrition>(), It.IsAny<CancellationToken>()))
@@ -150,12 +165,17 @@ namespace Tests.NutritionsApi.UnitTests
             var result = await _service.CreateAsync(requestDto, TestContext.CancellationToken);
 
             Assert.AreEqual(expectedDto, result);
+
             _mockMapper.Verify(m => m.Map<CreateNutritionRequestDto, Nutrition>(requestDto, It.IsAny<Nutrition>()), Times.Once);
+
             _mockRepository.Verify(r => r.CreateAsync(It.IsAny<Nutrition>(), It.IsAny<CancellationToken>()), Times.Once);
+
             _mockDtoFactory.Verify(f => f.GenerateDetailsResponse(999, 1, "New Meal", 200, false), Times.Once);
 
-            Assert.IsNotNull(capturedModelForRepo);
-            Assert.AreEqual(999, capturedModelForRepo.Id);
+            Assert.IsNotNull(capturedModelForRepo, "The entity passed to the repository should not be null.");
+            Assert.AreEqual(expectedNutritionForRepo.UserId, capturedModelForRepo.UserId);
+            Assert.AreEqual(expectedNutritionForRepo.Description, capturedModelForRepo.Description);
+            Assert.AreEqual(expectedNutritionForRepo.Calories, capturedModelForRepo.Calories);
         }
 
         [TestMethod]
@@ -173,17 +193,23 @@ namespace Tests.NutritionsApi.UnitTests
                 await _service.CreateAsync(requestDto, TestContext.CancellationToken));
         }
 
+        #endregion
+
+        #region UpdateAsync
+
         [TestMethod]
         public async Task UpdateAsync_ExistingNutrition_CallsMapAndRepository()
         {
-            var existingNutrition = new Nutrition {
+            var existingNutrition = new Nutrition
+            {
                 Id = 1,
                 UserId = 1,
                 Description = "Old",
                 Calories = 100,
                 IsDeleted = false,
                 Created = DateTime.UtcNow.AddMinutes(-10),
-                Updated = DateTime.UtcNow.AddMinutes(-5) };
+                Updated = DateTime.UtcNow.AddMinutes(-5)
+            };
 
             var requestDto = new UpdateNutritionRequestDto { NutritionId = 1, Description = "Updated", Calories = 200 };
 
@@ -237,6 +263,10 @@ namespace Tests.NutritionsApi.UnitTests
             _mockRepository.Verify(r => r.UpdateAsync(It.IsAny<Nutrition>(), It.IsAny<CancellationToken>()), Times.Never());
         }
 
+        #endregion
+
+        #region DeleteAsync
+
         [TestMethod]
         public async Task DeleteAsync_ExistingNutrition_CallsRepositoryAndReturnsTrue()
         {
@@ -279,6 +309,9 @@ namespace Tests.NutritionsApi.UnitTests
 
             _mockRepository.Verify(r => r.DeleteAsync(nutritionId, It.IsAny<CancellationToken>()), Times.Never());
         }
+
+        #endregion
     }
 }
+
 

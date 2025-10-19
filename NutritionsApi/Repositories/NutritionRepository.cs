@@ -15,7 +15,6 @@ namespace NutritionsApi.Repositories
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-
         public async Task<List<Nutrition>?> GetAllAsync(int userId, CancellationToken cancellationToken = default)
         {
             var nutritionList = await _context.Nutritions

@@ -27,6 +27,8 @@ namespace Tests.NutritionsApi.UnitTests
             _appContext.Database.EnsureDeleted();
             _appContext.Database.EnsureCreated();            
         }
+        #region GetByIdAsync
+
         [TestMethod]
         public async Task GetByIdAsync_ExistingId_ReturnsNutrition()
         {
@@ -52,13 +54,6 @@ namespace Tests.NutritionsApi.UnitTests
         }
 
         [TestMethod]
-        public async Task GetAllAsync_EmptyDb_ReturnsEmptyList()
-        {
-            var result = await _repository.GetAllAsync(1, TestContext.CancellationToken);
-            Assert.AreEqual(0, result.Count);
-        }
-
-        [TestMethod]
         public async Task GetByIdAsync_EmptyDb_ReturnsNull()
         {
             var result = await _repository.GetByIdAsync(1, TestContext.CancellationToken);
@@ -66,32 +61,10 @@ namespace Tests.NutritionsApi.UnitTests
         }
 
         [TestMethod]
-        public async Task DeleteAsync_NonExistingId_ReturnsFalse()
-        {
-            var result = await _repository.DeleteAsync(999, TestContext.CancellationToken);
-            Assert.IsFalse(result);
-        }
-
-        [TestMethod]
         public async Task GetByIdAsync_NonExistingId_ReturnsNull()
         {
             var result = await _repository.GetByIdAsync(999, TestContext.CancellationToken);
             Assert.IsNull(result);
-        }
-
-        [TestMethod]
-        public async Task DeleteAsync_ExistingActiveNutrition_SetsIsDeletedTrue()
-        {
-            var nutrition = new Nutrition { Id = 1, UserId = 2, Description = "To Delete", Calories = 100, IsDeleted = false };
-            _appContext.Nutritions.Add(nutrition);
-            await _appContext.SaveChangesAsync(TestContext.CancellationToken);
-
-            var result = await _repository.DeleteAsync(1, TestContext.CancellationToken);
-
-            Assert.IsTrue(result);
-            var dbNutrition = await _appContext.Nutritions.FindAsync(1);
-            Assert.IsTrue(dbNutrition.IsDeleted);
-            Assert.IsTrue(dbNutrition.Updated > DateTime.UtcNow.AddMinutes(-1));
         }
 
         [TestMethod]
@@ -110,6 +83,24 @@ namespace Tests.NutritionsApi.UnitTests
         }
 
         [TestMethod]
+        public async Task GetByIdAsync_NegativeId_ReturnsNull()
+        {
+            var result = await _repository.GetByIdAsync(-5, TestContext.CancellationToken);
+            Assert.IsNull(result);
+        }
+
+        #endregion
+
+        #region GetAllAsync
+
+        [TestMethod]
+        public async Task GetAllAsync_EmptyDb_ReturnsEmptyList()
+        {
+            var result = await _repository.GetAllAsync(1, TestContext.CancellationToken);
+            Assert.IsEmpty(result);
+        }
+
+        [TestMethod]
         public async Task GetAllAsync_ExcludesDeletedNutritions()
         {
             _appContext.Nutritions.AddRange(
@@ -120,22 +111,68 @@ namespace Tests.NutritionsApi.UnitTests
 
             var result = await _repository.GetAllAsync(1, TestContext.CancellationToken);
 
-            Assert.AreEqual(1, result.Count);
+            Assert.HasCount(1, result);
             Assert.AreEqual("Active", result[0].Description);
         }
+
+        #endregion
+
+        #region DeleteAsync
+
+        [TestMethod]
+        public async Task DeleteAsync_NonExistingId_ReturnsFalse()
+        {
+            var result = await _repository.DeleteAsync(999, TestContext.CancellationToken);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_ExistingActiveNutrition_SetsIsDeletedTrue()
+        {
+            var nutrition = new Nutrition { Id = 1, UserId = 2, Description = "To Delete", Calories = 100, IsDeleted = false };
+            _appContext.Nutritions.Add(nutrition);
+            await _appContext.SaveChangesAsync(TestContext.CancellationToken);
+
+            var result = await _repository.DeleteAsync(1, TestContext.CancellationToken);
+
+            Assert.IsTrue(result);
+            var dbNutrition = await _appContext.Nutritions.FindAsync(1);
+            Assert.IsTrue(dbNutrition.IsDeleted);
+            Assert.IsTrue(dbNutrition.Updated > DateTime.UtcNow.AddMinutes(-1));
+        }
+
+        [TestMethod]
+        public async Task DeleteAsync_AlreadyDeletedNutrition_ReturnsFalse()
+        {
+            var nutrition = new Nutrition { Id = 1, UserId = 2, Description = "Already Deleted", Calories = 100, IsDeleted = true };
+            _appContext.Nutritions.Add(nutrition);
+            await _appContext.SaveChangesAsync(TestContext.CancellationToken);
+
+            var result = await _repository.DeleteAsync(1, TestContext.CancellationToken);
+
+            Assert.IsFalse(result);
+        }
+
+        #endregion
+
+        #region CreateAsync
 
         [TestMethod]
         public async Task CreateAsync_SetsCreatedToUtcNow()
         {
             var beforeCall = DateTime.UtcNow;
-            var nutrition = new Nutrition { UserId = 1, Description = "New Meal", Calories = 150, IsDeleted = false }; 
+            var nutrition = new Nutrition { UserId = 1, Description = "New Meal", Calories = 150, IsDeleted = false };
             var afterCall = DateTime.UtcNow;
 
             Assert.IsTrue(nutrition.Created >= beforeCall && nutrition.Created <= afterCall.AddSeconds(1));
 
-            await _repository.CreateAsync(nutrition, TestContext.CancellationToken);            
+            await _repository.CreateAsync(nutrition, TestContext.CancellationToken);
             Assert.IsTrue(nutrition.Created <= DateTime.UtcNow.AddSeconds(1));
         }
+
+        #endregion
+
+        #region UpdateAsync
 
         [TestMethod]
         public async Task UpdateAsync_SetsUpdatedToUtcNow()
@@ -151,29 +188,12 @@ namespace Tests.NutritionsApi.UnitTests
 
             await _repository.UpdateAsync(nutrition, TestContext.CancellationToken);
 
-            Assert.AreEqual(originalCreated, nutrition.Created);          
+            Assert.AreEqual(originalCreated, nutrition.Created);
             Assert.AreEqual(originalUpdated, nutrition.Updated);
             Assert.AreEqual("Updated", nutrition.Description);
             Assert.AreEqual(300, nutrition.Calories);
         }
 
-        [TestMethod]
-        public async Task GetByIdAsync_NegativeId_ReturnsNull()
-        {
-            var result = await _repository.GetByIdAsync(-5, TestContext.CancellationToken);
-            Assert.IsNull(result);
-        }
-
-        [TestMethod]
-        public async Task DeleteAsync_AlreadyDeletedNutrition_ReturnsFalse()
-        {
-            var nutrition = new Nutrition { Id = 1, UserId = 2, Description = "Already Deleted", Calories = 100, IsDeleted = true };
-            _appContext.Nutritions.Add(nutrition);
-            await _appContext.SaveChangesAsync(TestContext.CancellationToken);
-
-            var result = await _repository.DeleteAsync(1, TestContext.CancellationToken);
-
-            Assert.IsFalse(result);
-        }
-    }   
+        #endregion
+    }
 }
