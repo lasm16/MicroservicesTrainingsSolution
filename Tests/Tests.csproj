@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AchievementsApi\AchievementsApi.csproj" />
     <ProjectReference Include="..\NutritionsApi\NutritionsApi.csproj" />
+    <ProjectReference Include="..\UsersApi\UsersApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>

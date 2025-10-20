@@ -12,12 +12,14 @@ public class AchievementsServiceTest
 {
     public TestContext TestContext { get; set; }
     public readonly Mock<IAchievementRepository> _repository;
+    public readonly Mock<INotificationService> _notificationService;
     public readonly AchievementService _service;
 
     public AchievementsServiceTest()
     {
         _repository = new Mock<IAchievementRepository>();
-        _service = new AchievementService(_repository.Object);
+        _notificationService = new Mock<INotificationService>();
+        _service = new AchievementService(_repository.Object, _notificationService.Object);
     }
 
     #region Tests for CreateAsync method
@@ -26,7 +28,6 @@ public class AchievementsServiceTest
     {
         _repository.Setup(x => x.AddAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()))
             .Returns(Task.FromResult(true));
-
         var request = new AchievementCreateRequest
         {
             AchievedDate = DateTime.UtcNow,
@@ -37,6 +38,7 @@ public class AchievementsServiceTest
 
         var result = _service.CreateAsync(request, TestContext.CancellationToken).Result;
 
+        _repository.Verify(x => x.AddAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.IsTrue(result);
     }
 
@@ -54,7 +56,8 @@ public class AchievementsServiceTest
         };
 
         var result = _service.CreateAsync(request, TestContext.CancellationToken).Result;
-
+        
+        _repository.Verify(x => x.AddAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.IsTrue(result);
     }
     #endregion
@@ -72,7 +75,6 @@ public class AchievementsServiceTest
             Value = 15,
             IsDeleted = true
         };
-
         _repository.Setup(x => x.GetByIdAsync(request.Id, It.IsAny<CancellationToken>()))
                      .ReturnsAsync(new Achievement());
         _repository.Setup(x => x.UpdateAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()))
@@ -80,6 +82,8 @@ public class AchievementsServiceTest
 
         var result = _service.UpdateAsync(request, TestContext.CancellationToken).Result;
 
+        _repository.Verify(x => x.GetByIdAsync(request.Id, It.IsAny<CancellationToken>()), Times.Once);
+        _repository.Verify(x => x.UpdateAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.IsTrue(result);
     }
 
@@ -96,11 +100,9 @@ public class AchievementsServiceTest
             IsDeleted = true
         };
 
-        _repository.Setup(x => x.UpdateAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()))
-                 .Returns(Task.FromResult(false));
-
         var result = _service.UpdateAsync(request, TestContext.CancellationToken).Result;
 
+        _repository.Verify(x => x.UpdateAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()), Times.Never);
         Assert.IsFalse(result);
     }
     #endregion
@@ -118,14 +120,15 @@ public class AchievementsServiceTest
             Value = 15,
             IsDeleted = true
         };
-
         _repository.Setup(x => x.GetByIdAsync(request.Id, It.IsAny<CancellationToken>()))
                      .ReturnsAsync(new Achievement());
         _repository.Setup(x => x.DeleteAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()))
                  .Returns(Task.FromResult(true));
 
         var result = _service.DeleteAsync(request.Id, TestContext.CancellationToken).Result;
-
+        
+        _repository.Verify(x => x.GetByIdAsync(request.Id, It.IsAny<CancellationToken>()), Times.Once);
+        _repository.Verify(x => x.DeleteAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.IsTrue(result);
     }
 
@@ -142,11 +145,9 @@ public class AchievementsServiceTest
             IsDeleted = true
         };
 
-        _repository.Setup(x => x.DeleteAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()))
-                 .Returns(Task.FromResult(false));
-
         var result = _service.DeleteAsync(request.Id, TestContext.CancellationToken).Result;
 
+        _repository.Verify(x => x.DeleteAsync(It.IsAny<Achievement>(), It.IsAny<CancellationToken>()), Times.Never);
         Assert.IsFalse(result);
     }
     #endregion
@@ -162,6 +163,7 @@ public class AchievementsServiceTest
 
         var actual = _service.GetByIdAsync(1, TestContext.CancellationToken).Result;
 
+        _repository.Verify(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()), Times.Once);
         Assert.AreEqual(expected.Id, actual!.Id);
         Assert.AreEqual(expected.Type, actual.Type);
         Assert.AreEqual(expected.UserId, actual.UserId);
@@ -177,6 +179,7 @@ public class AchievementsServiceTest
 
         var result = _service.GetByIdAsync(1, TestContext.CancellationToken).Result;
 
+        _repository.Verify(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()), Times.Once);
         Assert.IsNull(result);
     }
     #endregion
@@ -191,12 +194,12 @@ public class AchievementsServiceTest
             GetAchievement(),
             GetAchievement()
         };
-
         _repository.Setup(x => x.GetAllAsync(1, It.IsAny<CancellationToken>()))
                      .ReturnsAsync(achievementList);
 
         var result = _service.GetAllByUserIdAsync(1, TestContext.CancellationToken).Result;
 
+        _repository.Verify(x => x.GetAllAsync(1, It.IsAny<CancellationToken>()), Times.Once);
         Assert.HasCount(2, result);
     }
 
@@ -208,6 +211,7 @@ public class AchievementsServiceTest
 
         var result = _service.GetAllByUserIdAsync(1, TestContext.CancellationToken).Result;
 
+        _repository.Verify(x => x.GetAllAsync(1, It.IsAny<CancellationToken>()), Times.Once);
         Assert.HasCount(0, result);
     }
     #endregion

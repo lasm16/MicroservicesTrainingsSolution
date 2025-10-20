@@ -1,4 +1,4 @@
-﻿namespace UsersApi.BLL.Models
+namespace UsersApi.BLL.DTOs
 {
     public class UserRequest
     {        
