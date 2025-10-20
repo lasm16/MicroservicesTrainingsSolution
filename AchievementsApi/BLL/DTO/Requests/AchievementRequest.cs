@@ -5,7 +5,7 @@ namespace AchievementsApi.BLL.DTO.Requests
 {
     public abstract class AchievementRequest
     {
-        [Range(0, 2147483647, ErrorMessage = "Значение поля должно быть в диапозоне от 1 до 2147483647")]
+        [Range(0, int.MaxValue, ErrorMessage = "Значение поля должно быть в диапозоне от 1 до 2147483647")]
         public AchievementType Type { get; set; }
         public decimal Value { get; set; }
         [DataType(DataType.Date), DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
