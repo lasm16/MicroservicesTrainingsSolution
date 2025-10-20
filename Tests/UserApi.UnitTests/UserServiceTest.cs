@@ -1,12 +1,7 @@
 ﻿using DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UsersApi.BLL.Models;
+using UsersApi.Abstractions;
+using UsersApi.BLL.DTOs;
 using UsersApi.BLL.Services;
 using UsersApi.Repositories;
 
@@ -18,13 +13,15 @@ namespace Tests.UserApi.UnitTests
         public TestContext TestContext { get; set; }
 
         private Mock<IUserRepository> _mockRepository;
+        private Mock<IDbListener> _listner;
         private UserService _service;
 
         [TestInitialize]
         public void Setup()
         {            
             _mockRepository = new Mock<IUserRepository>();
-            _service = new UserService(_mockRepository.Object);
+            _listner = new Mock<IDbListener>();
+            _service = new UserService(_mockRepository.Object, _listner.Object);
         }
 
         [TestMethod]

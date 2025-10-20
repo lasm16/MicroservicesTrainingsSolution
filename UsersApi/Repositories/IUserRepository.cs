@@ -1,5 +1,4 @@
 ﻿using DataAccess.Models;
-using UsersApi.BLL;
 
 namespace UsersApi.Repositories
 {

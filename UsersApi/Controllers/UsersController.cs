@@ -49,7 +49,7 @@ namespace UsersApi.Controllers
             [FromBody] UserRequest request,
             CancellationToken cancellationToken)
         {
-            var success = await userService.UpdateAsync(request, cancellationToken);
+            await userService.UpdateAsync(request, cancellationToken);
             return NoContent();
         }
 
