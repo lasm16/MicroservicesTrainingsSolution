@@ -1,48 +1,52 @@
-﻿using TrainingsApi.Repositories;
+﻿using TrainingsApi.BLL.Helpers;
+using TrainingsApi.Repositories;
 
 namespace TrainingsApi.BLL.Services
 {
     public class TrainingService(ITrainingRepository repository) : ITrainingService
     {
-        public Task<List<string>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<List<TrainingDto>> GetAllAsync(int userId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var trainings = await repository.GetAllAsync(userId, cancellationToken);
+            return TrainingMapper.ToDtoList(trainings);
         }
 
-        public Task<string> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<TrainingDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var training = await repository.GetByIdAsync(id, cancellationToken);
+            return training is null ? null : TrainingMapper.ToDto(training);
         }
 
-        public async Task CreateAsync(int userId, string description, DateTime date, double duration, bool isCompleted, CancellationToken cancellationToken = default)
+        public async Task CreateAsync(TrainingDto dto, CancellationToken cancellationToken = default)
         {
-            var training = new TrainingDto
-            {
-                UserId = userId,
-                Description = description,
-                Date = date,
-                DurationInMinutes = duration,
-                IsCompleted = isCompleted,
-            };
-            await repository.AddAsync(training);
+            if (dto.UserId <= 0)
+                throw new ArgumentException("UserId is required");
+            if (dto.Date == default)
+                throw new ArgumentException("Date is required");
+            if (dto.DurationInMinutes <= 0)
+                throw new ArgumentException("DurationInMinutes must be greater than 0");
+
+            var training = TrainingMapper.ToEntity(dto);
+            await repository.AddAsync(training, cancellationToken);
         }
 
-        public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task UpdateAsync(TrainingDto dto, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var training = await repository.GetByIdAsync(dto.Id, cancellationToken);
+            if (training is null)
+                throw new ArgumentException($"Training with id {dto.Id} not found");
+
+            TrainingMapper.UpdateEntity(training, dto);
+            await repository.UpdateAsync(training, cancellationToken);
         }
 
-        public Task UpdateAsync(int id, int userId, string description, DateTime date, double duration, bool isCompleted, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
-            var training = new TrainingDto
-            {
-                UserId = userId,
-                Description = description,
-                Date = date,
-                DurationInMinutes = duration,
-                IsCompleted = isCompleted,
-            };
-            throw new NotImplementedException();
+            var training = await repository.GetByIdAsync(id, cancellationToken);
+            if (training is null)
+                throw new ArgumentException($"Training with id {id} not found");
+
+            await repository.DeleteAsync(training, cancellationToken);
         }
     }
 }

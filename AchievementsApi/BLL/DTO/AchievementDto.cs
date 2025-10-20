@@ -1,8 +1,8 @@
 ﻿using DataAccess.Enums;
 
-namespace DataAccess.Models
+namespace AchievementsApi.BLL.DTO
 {
-    public class Achievement
+    public class AchievementDto
     {
         public int Id { get; set; }
         public int UserId { get; set; }
@@ -10,8 +10,6 @@ namespace DataAccess.Models
         public decimal Value { get; set; }
         public decimal Reward { get; set; }
         public DateTime AchievedDate { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

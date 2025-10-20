@@ -32,7 +32,13 @@ namespace UsersApi.BLL.Services
 
         public async Task<UserDto> CreateAsync(UserRequest request, CancellationToken cancellationToken)
         {
-            var userDto = UserMapper.MapToUserDto(request.Id,request.Name, request.Surname, request.Email);
+
+            var existingUser = await userRepository.GetByIdAsync(request.Id, cancellationToken);
+            if (existingUser != null)
+            {                
+                throw new InvalidOperationException($"Пользователь с Id = {request.Id} уже существует.");
+            }
+            var userDto = UserMapper.MapToUserDto(request);
 
             var userEntity = UserMapper.ToEntity(userDto);
 
@@ -42,8 +48,8 @@ namespace UsersApi.BLL.Services
         }
 
         public async Task<bool> UpdateAsync(UserRequest request, CancellationToken cancellationToken)
-        {         
-            var userDto = UserMapper.MapToUserDto(request.Id,request.Name, request.Surname, request.Email);
+        {            
+            var userDto = UserMapper.MapToUserDto(request);
             
 
             var existingUser = await _userRepository.GetByIdAsync(userDto.Id, cancellationToken);

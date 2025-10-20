@@ -10,7 +10,7 @@ namespace DataAccess
         public DbSet<Training> Trainings { get; set; }
         public DbSet<User> Users { get; set; }
 
-        public AppContext(DbContextOptions<AppContext> options) : base(options)
+        public AppContext(DbContextOptions options) : base(options)
         {
             Database.EnsureCreated();
         }
@@ -25,6 +25,8 @@ namespace DataAccess
 
             modelBuilder.Entity<User>().HasKey(x => x.Id);
             modelBuilder.Entity<User>().Property(x => x.Name).HasMaxLength(140);
+
+            modelBuilder.Entity<Achievement>().HasKey(x => x.Id);
             base.OnModelCreating(modelBuilder);
         }
     }
