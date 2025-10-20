@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UsersApi.BLL.Models;
+using UsersApi.BLL.DTOs;
 using UsersApi.BLL.Services;
 
 namespace UsersApi.Controllers
@@ -8,7 +8,7 @@ namespace UsersApi.Controllers
     [Route("api/[controller]")]
     public class UsersController(IUserService userService) : ControllerBase
     {
-        [HttpGet("{id:int}")]
+        [HttpGet("get-user/{id:int}")]
         public async Task<IActionResult> GetUserAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             var userDto = await userService.GetByIdAsync(id, cancellationToken);
@@ -20,7 +20,7 @@ namespace UsersApi.Controllers
             return Ok(new { userName = fullName });
         }
 
-        [HttpGet]
+        [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllUsersAsync(CancellationToken cancellationToken)
         {
             var usersDto = await userService.GetAllAsync(cancellationToken);
@@ -35,7 +35,7 @@ namespace UsersApi.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("api/create")]
         public async Task<IActionResult> CreateUserAsync(
             [FromBody] UserRequest request,
             CancellationToken cancellationToken)
@@ -44,7 +44,7 @@ namespace UsersApi.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id:int}")]
+        [HttpPut("update-user/{id:int}")]
         public async Task<IActionResult> UpdateUserAsync(            
             [FromBody] UserRequest request,
             CancellationToken cancellationToken)
@@ -53,7 +53,7 @@ namespace UsersApi.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("delete-user/{id:int}")]
         public async Task<IActionResult> DeleteUserAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             await userService.DeleteAsync(id, cancellationToken);

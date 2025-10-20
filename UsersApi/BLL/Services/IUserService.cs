@@ -1,4 +1,4 @@
-﻿using UsersApi.BLL.Models;
+﻿using UsersApi.BLL.DTOs;
 
 namespace UsersApi.BLL.Services
 {

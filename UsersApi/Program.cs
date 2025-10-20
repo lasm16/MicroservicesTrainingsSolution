@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using UsersApi.Abstractions;
 using UsersApi.BLL.Mapper;
 using UsersApi.BLL.Services;
+using UsersApi.Listeners;
 using UsersApi.Repositories;
 
 namespace UsersApi
@@ -18,10 +20,13 @@ namespace UsersApi
             builder.Services.AddOpenApi();
             builder.Services.AddScoped<UserMapper>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IUserService,UserService>();            
+            builder.Services.AddScoped<IUserService,UserService>();
+            builder.Services.AddSingleton<IDbListener, DbNotificationListener>();
+            builder.Services.AddHostedService(provider =>
+                (DbNotificationListener)provider.GetRequiredService<IDbListener>());
            
             builder.Services.AddDbContext<DataAccess.AppContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("TrainingsDb"))
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql"))
 );
 
             var app = builder.Build();

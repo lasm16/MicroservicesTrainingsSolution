@@ -1,4 +1,4 @@
-﻿namespace UsersApi.BLL
+﻿namespace UsersApi.BLL.DTOs
 {
     public class UserDto
     {

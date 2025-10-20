@@ -1,4 +1,5 @@
 ﻿using DataAccess.Models;
+using UsersApi.BLL.DTOs;
 
 namespace UsersApi.BLL.Mapper
 {
