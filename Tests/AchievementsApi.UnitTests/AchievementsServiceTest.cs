@@ -12,12 +12,14 @@ public class AchievementsServiceTest
 {
     public TestContext TestContext { get; set; }
     public readonly Mock<IAchievementRepository> _repository;
+    public readonly Mock<INotificationService> _notificationService;
     public readonly AchievementService _service;
 
     public AchievementsServiceTest()
     {
         _repository = new Mock<IAchievementRepository>();
-        _service = new AchievementService(_repository.Object);
+        _notificationService = new Mock<INotificationService>();
+        _service = new AchievementService(_repository.Object, _notificationService.Object);
     }
 
     #region Tests for CreateAsync method
