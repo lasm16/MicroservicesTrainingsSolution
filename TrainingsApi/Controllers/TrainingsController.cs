@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TrainingsApi.BLL;
 using TrainingsApi.BLL.Services;
-using UsersApi.BLL.Services;
 
 namespace TrainingsApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TrainingsController(ITrainingService trainingService, IUserService userService) : ControllerBase
+    public class TrainingsController(ITrainingService trainingService) : ControllerBase
     {
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTrainingAsync([FromRoute] int id)
@@ -17,18 +16,15 @@ namespace TrainingsApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTrainingsAsync()
+        public async Task<IActionResult> GetAllTrainingsAsync(int id)
         {
-            var result = await trainingService.GetAllAsync();
+            var result = await trainingService.GetAllAsync(id);
             return Ok(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateTrainingAsync([FromBody] TrainingDto dto)
         {
-            var user = await userService.GetByIdAsync(dto.UserId);
-            if (user is null) return NotFound($"User with id {dto.UserId} not found");
-
             await trainingService.CreateAsync(dto);
             return NoContent();
         }

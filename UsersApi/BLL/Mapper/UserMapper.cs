@@ -35,6 +35,21 @@ namespace UsersApi.BLL.Mapper
                 Email = entity.Email
             };
         }
+
+        public static UserResponse GetUserResponse(User user)
+        {
+            if (IsNull(user) || user.IsDeleted)
+                return null!;
+
+            return new UserResponse
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email
+            };
+        }
+
         public static void UpdateEntity(UserDto dto, User entity)
         {
             if (IsNull(dto) || IsNull(entity))

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using UsersApi.Abstractions;
 using UsersApi.BLL.DTOs;
-using UsersApi.BLL.Services;
 
 namespace UsersApi.Controllers
 {
@@ -11,13 +11,13 @@ namespace UsersApi.Controllers
         [HttpGet("get-user/{id:int}")]
         public async Task<IActionResult> GetUserAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
-            var userDto = await userService.GetByIdAsync(id, cancellationToken);
+            var response = await userService.GetByIdAsync(id, cancellationToken);
 
-            if (userDto == null)
+            if (response == null)
                 return NotFound();
 
-            var fullName = $"{userDto.Name} {userDto.Surname}".Trim();
-            return Ok(new { userName = fullName });
+            var fullName = $"{response.Name} {response.Surname}".Trim();
+            return Ok(new { userName = fullName, response.Achievements, response.Nutritions, response.Trainings });
         }
 
         [HttpGet("get-all-users")]
@@ -44,8 +44,8 @@ namespace UsersApi.Controllers
             return NoContent();
         }
 
-        [HttpPut("update-user/{id:int}")]
-        public async Task<IActionResult> UpdateUserAsync(            
+        [HttpPut("update-user")]
+        public async Task<IActionResult> UpdateUserAsync(
             [FromBody] UserRequest request,
             CancellationToken cancellationToken)
         {

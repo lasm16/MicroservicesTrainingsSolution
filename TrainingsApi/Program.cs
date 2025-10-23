@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TrainingsApi.BLL.Services;
 using TrainingsApi.Repositories;
-using UsersApi.BLL.Services;
-using UsersApi.Repositories;
-using NSwag.AspNetCore;
 
 namespace TrainingsApi
 {
@@ -25,8 +21,6 @@ namespace TrainingsApi
 
             builder.Services.AddScoped<ITrainingRepository, TrainingRepository>();
             builder.Services.AddScoped<ITrainingService, TrainingService>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IUserService, UserService>();
 
             builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {
