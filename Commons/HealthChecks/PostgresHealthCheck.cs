@@ -26,7 +26,6 @@ namespace Commons.HealthChecks
                 await using var connection = new NpgsqlConnection(_connectionString);
                 await connection.OpenAsync(cancellationToken);
 
-                // Проверяем, что можем выполнить простой запрос
                 await using var command = new NpgsqlCommand("SELECT 1;", connection);
                 var result = await command.ExecuteScalarAsync(cancellationToken);
 

@@ -1,5 +1,4 @@
-﻿using Commons.HealthChecks;
-using Microsoft.AspNetCore.Builder;
+using Commons.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using NSwag.AspNetCore;
 using TrainingsApi.BLL.Services;
@@ -31,13 +30,16 @@ namespace TrainingsApi
 
             builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {
-                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=TrainingsDb;");
+                var connectionString = builder.Configuration.GetConnectionString("Npgsql")
+                                       ?? throw new InvalidOperationException("Connection string not found.");
+                x.UseNpgsql(connectionString);
             });
 
             builder.Services.AddSingleton(provider =>
             new PostgresHealthCheck(
-                builder.Configuration.GetConnectionString("UserName=postgres;Password=;Host=localhost;Port=5432;Database=TrainingsDb;")
+                builder.Configuration.GetConnectionString("Npgsql")
                 ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.")));
+            
             builder.Services.AddHealthChecks()
                             .AddCommonHealthChecks();
 

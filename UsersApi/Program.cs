@@ -2,6 +2,7 @@ using Commons;
 using Commons.HealthChecks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using UsersApi.Abstractions;
 using UsersApi.BLL.Mapper;
@@ -39,6 +40,7 @@ namespace UsersApi
 
             builder.Services.AddHealthChecks()
                             .AddCommonHealthChecks();
+
 
             var app = builder.Build();
 

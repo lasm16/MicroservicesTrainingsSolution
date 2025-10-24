@@ -10,8 +10,6 @@ namespace Commons.HealthChecks
             return builder
                 .AddCheck<RequestTimeHealthCheck>("request_time_check")
                 .AddCheck<PostgresHealthCheck>("postgresql_connection");
-
-
         }        
     }
 }
