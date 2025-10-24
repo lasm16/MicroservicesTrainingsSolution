@@ -2,6 +2,7 @@ using AchievementsApi.Abstractions;
 using AchievementsApi.BLL.Services;
 using AchievementsApi.Repositores;
 using Microsoft.EntityFrameworkCore;
+using Commons.HealthChecks;
 
 namespace AchievementsApi
 {
@@ -25,6 +26,13 @@ namespace AchievementsApi
                 x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
 
+            builder.Services.AddSingleton(provider =>
+            new PostgresHealthCheck(
+                builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.")));
+            builder.Services.AddHealthChecks()
+                            .AddCommonHealthChecks();
+
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -35,6 +43,8 @@ namespace AchievementsApi
                     options.DocumentPath = "openapi/v1.json";
                 });
             }
+
+            app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("AchievmentsApi"));
 
             app.UseHttpsRedirection();
             app.UseAuthorization();

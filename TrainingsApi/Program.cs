@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Commons.HealthChecks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using NSwag.AspNetCore;
 using TrainingsApi.BLL.Services;
 using TrainingsApi.Repositories;
 using UsersApi.BLL.Services;
 using UsersApi.Repositories;
-using NSwag.AspNetCore;
 
 namespace TrainingsApi
 {
@@ -33,6 +34,13 @@ namespace TrainingsApi
                 x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=TrainingsDb;");
             });
 
+            builder.Services.AddSingleton(provider =>
+            new PostgresHealthCheck(
+                builder.Configuration.GetConnectionString("UserName=postgres;Password=;Host=localhost;Port=5432;Database=TrainingsDb;")
+                ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.")));
+            builder.Services.AddHealthChecks()
+                            .AddCommonHealthChecks();
+
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -44,6 +52,8 @@ namespace TrainingsApi
                     settings.DocumentPath = "/swagger/v1/swagger.json";
                 });
             }
+
+            app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("TrainingsApi"));
 
             app.UseHttpsRedirection();
             app.UseAuthorization();

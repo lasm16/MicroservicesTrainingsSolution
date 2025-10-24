@@ -1,11 +1,11 @@
+using Commons.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using NutritionsApi.Abstractions;
+using NutritionsApi.BLL.Factories;
+using NutritionsApi.BLL.Profiles;
 using NutritionsApi.BLL.Services;
 using NutritionsApi.Middleware;
 using NutritionsApi.Repositories;
-using AutoMapper;
-using NutritionsApi.BLL.Factories;
-using NutritionsApi.BLL.Profiles;
 
 namespace NutritionsApi
 {
@@ -34,6 +34,15 @@ namespace NutritionsApi
                 x.UseNpgsql(connectionString);
             });
 
+            builder.Services.AddSingleton(provider =>
+            new PostgresHealthCheck(
+                builder.Configuration.GetConnectionString("Npgsql")
+                ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.")));
+
+            builder.Services.AddHealthChecks()
+                            .AddCommonHealthChecks();
+
+
             var app = builder.Build();
             
             if (app.Environment.IsDevelopment())
@@ -44,7 +53,9 @@ namespace NutritionsApi
                     options.DocumentPath = "openapi/v1.json";
                 });
             }
-            
+
+            app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("NutritionsApi"));
+
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseHttpsRedirection();
             app.UseAuthorization();

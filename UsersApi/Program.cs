@@ -1,4 +1,8 @@
+using Commons;
+using Commons.HealthChecks;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using UsersApi.Abstractions;
 using UsersApi.BLL.Mapper;
 using UsersApi.BLL.Services;
@@ -26,12 +30,18 @@ namespace UsersApi
                 (DbNotificationListener)provider.GetRequiredService<IDbListener>());
            
             builder.Services.AddDbContext<DataAccess.AppContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql"))
-);
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql")));
+
+            builder.Services.AddSingleton(provider =>
+            new PostgresHealthCheck(
+                builder.Configuration.GetConnectionString("Npgsql")
+                ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.")));
+
+            builder.Services.AddHealthChecks()
+                            .AddCommonHealthChecks();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
@@ -40,6 +50,8 @@ namespace UsersApi
                     options.DocumentPath = "openapi/v1.json";
                 });
             }
+
+            app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("UsersApi"));
 
             app.UseHttpsRedirection();
 
