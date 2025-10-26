@@ -1,9 +1,6 @@
-using Commons;
 using Commons.HealthChecks;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using UsersApi.Abstractions;
 using UsersApi.BLL.Mapper;
 using UsersApi.BLL.Services;
@@ -61,9 +58,7 @@ namespace UsersApi
                 ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.")));
 
             builder.Services.AddHealthChecks()
-                            .AddCommonHealthChecks();
-
-                options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql")));
+                            .AddCommonHealthChecks();                
 
             var app = builder.Build();
 

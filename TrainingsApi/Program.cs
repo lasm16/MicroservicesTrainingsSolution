@@ -1,10 +1,7 @@
 using Commons.HealthChecks;
 using Microsoft.EntityFrameworkCore;
-using NSwag.AspNetCore;
 using TrainingsApi.BLL.Services;
 using TrainingsApi.Repositories;
-using UsersApi.BLL.Services;
-using UsersApi.Repositories;
 
 namespace TrainingsApi
 {
