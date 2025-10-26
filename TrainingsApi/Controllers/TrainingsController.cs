@@ -37,11 +37,8 @@ namespace TrainingsApi.Controllers
             return NoContent();
         }
         [HttpPatch("{id:int}/status")]
-        public async Task<IActionResult> UpdateTrainingStatus([FromRoute] int id, [FromBody] TrainingStatusUpdateDto dto)
+        public async Task<IActionResult> UpdateTrainingStatus([FromRoute] TrainingStatusUpdateDto dto)
         {
-            if (id != dto.Id)
-                return BadRequest("Route id and body id do not match.");
-
             await trainingService.UpdateStatusAsync(dto);
             return NoContent();
         }
