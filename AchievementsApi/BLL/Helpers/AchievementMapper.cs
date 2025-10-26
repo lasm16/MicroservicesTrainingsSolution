@@ -1,4 +1,5 @@
 ﻿using AchievementsApi.BLL.DTO;
+using AchievementsApi.BLL.DTO.Requests;
 using DataAccess.Models;
 
 namespace AchievementsApi.BLL.Helpers
@@ -13,6 +14,7 @@ namespace AchievementsApi.BLL.Helpers
                 UserId = achievement.UserId,
                 AchievedDate = achievement.AchievedDate,
                 Value = achievement.Value,
+                Reward = achievement.Reward,
                 Type = achievement.Type,
                 IsDeleted = achievement.IsDeleted,
             };
@@ -20,9 +22,7 @@ namespace AchievementsApi.BLL.Helpers
 
         internal static List<AchievementDto> MapEntityCollectionToDto(List<Achievement> achievements)
         {
-            var list = new List<AchievementDto>();
-            list.AddRange(achievements.Select(MapEntityToDto));
-            return list;
+            return [.. achievements.Select(MapEntityToDto)];
         }
 
         internal static Achievement MapDtoToEntity(AchievementDto achievementDto)
@@ -33,19 +33,33 @@ namespace AchievementsApi.BLL.Helpers
                 UserId = achievementDto.UserId,
                 AchievedDate = achievementDto.AchievedDate,
                 Value = achievementDto.Value,
+                Reward = achievementDto.Reward,
                 Type = achievementDto.Type,
                 IsDeleted = achievementDto.IsDeleted,
             };
         }
 
-        internal static Achievement MapDtoToEntity(AchievementRequest request)
+        internal static AchievementDto MapRequestToDto(AchievementCreateRequest request)
         {
-            return new Achievement
+            return new AchievementDto
             {
                 UserId = request.UserId,
                 AchievedDate = request.AchievedDate,
                 Value = request.Value,
                 Type = request.Type,
+            };
+        }
+
+        internal static AchievementDto MapRequestToDto(AchievementUpdateRequest request)
+        {
+            return new AchievementDto
+            {
+                Id = request.Id,
+                UserId = request.UserId,
+                AchievedDate = request.AchievedDate,
+                Value = request.Value,
+                Type = request.Type,
+                IsDeleted = request.IsDeleted,
             };
         }
     }

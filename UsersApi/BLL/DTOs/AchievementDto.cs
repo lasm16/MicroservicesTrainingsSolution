@@ -1,12 +1,13 @@
 ﻿using DataAccess.Enums;
 
-namespace AchievementsApi.BLL.DTO
+namespace UsersApi.BLL.DTOs
 {
-    public class AchievementRequest
+    public class AchievementDto
     {
-        public int UserId { get; set; }
+        public int Id { get; set; }
         public AchievementType Type { get; set; }
         public decimal Value { get; set; }
+        public decimal Reward { get; set; }
         public DateTime AchievedDate { get; set; }
     }
 }

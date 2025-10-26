@@ -8,7 +8,8 @@ public interface IDtoFactory
 {
     CreateNutritionRequestDto GenerateCreateDto(int userId, string? description, double calories);
     UpdateNutritionRequestDto GenerateUpdateDto(int nutritionId, string? description, double calories);
-    NutritionDetailsResponseDto GenerateDetailsResponse(        int nutritionId,
+    NutritionDetailsResponseDto GenerateDetailsResponse(
+        int nutritionId,
         int userId,
         string? description,
         double calories,

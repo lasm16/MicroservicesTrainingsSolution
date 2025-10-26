@@ -1,4 +1,5 @@
-﻿using DataAccess.Models;
+﻿using AchievementsApi.Abstractions;
+using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AchievementsApi.Repositores
@@ -9,8 +10,7 @@ namespace AchievementsApi.Repositores
 
         public async Task<bool> AddAsync(Achievement achievement, CancellationToken cancellationToken = default)
         {
-            var last = await _context.Achievements.OrderBy(x => x.Id).LastOrDefaultAsync(cancellationToken);
-            CreateEntity(achievement, last);
+            achievement.CreatedAt = DateTime.UtcNow;
             await _context.Achievements.AddAsync(achievement, cancellationToken);
             var result = await _context.SaveChangesAsync(cancellationToken);
             return result > 0;
@@ -18,28 +18,14 @@ namespace AchievementsApi.Repositores
 
         public async Task<bool> UpdateAsync(Achievement achievement, CancellationToken cancellationToken = default)
         {
-            var entity = await _context.Achievements.FirstOrDefaultAsync(x => x.Id == achievement.Id, cancellationToken);
-            if (entity == null)
-            {
-                Console.WriteLine($"Не найдено достижение с id={achievement.Id}!");
-                return false;
-            }
-            UpdateEntity(achievement, entity);
+            achievement.UpdatedAt = DateTime.UtcNow;
             _context.Achievements.Update(achievement);
             var result = await _context.SaveChangesAsync(cancellationToken);
             return result > 0;
         }
 
-        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteAsync(Achievement achievement, CancellationToken cancellationToken = default)
         {
-            var achievement = await _context.Achievements
-                .FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false, cancellationToken: cancellationToken);
-
-            if (achievement == null)
-            {
-                Console.WriteLine($"Не найдено достижение с id={id}!");
-                return false;
-            }
             DeleteEntity(achievement);
             _context.Achievements.Update(achievement);
             var result = await _context.SaveChangesAsync(cancellationToken);
@@ -59,29 +45,10 @@ namespace AchievementsApi.Repositores
                 .FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false, cancellationToken: cancellationToken);
         }
 
-        private static void CreateEntity(Achievement achievement, Achievement? last)
-        {
-            if (last == null)
-            {
-                achievement.Id = 1;
-            }
-            if (last != null)
-            {
-                achievement.Id = last.Id + 1;
-            }
-            achievement.CreatedAt = DateTime.UtcNow;
-        }
-
         private static void DeleteEntity(Achievement achievement)
         {
             achievement.IsDeleted = true;
             achievement.UpdatedAt = DateTime.UtcNow;
-        }
-
-        private static void UpdateEntity(Achievement achievement, Achievement entity)
-        {
-            achievement.UpdatedAt = DateTime.UtcNow;
-            achievement.CreatedAt = entity.CreatedAt;
         }
     }
 }

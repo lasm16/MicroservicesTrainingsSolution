@@ -7,12 +7,13 @@ namespace NutritionsApi.Repositories
     public class NutritionRepository(DataAccess.AppContext context) : INutritionRepository
     {
         private readonly DataAccess.AppContext _context = context;
-        
+
         public async Task<Nutrition?> GetByIdAsync(int nutritionId, CancellationToken cancellationToken = default)
         {
-            return await _context.Nutritions.FindAsync([nutritionId], cancellationToken);
+            return await _context.Nutritions
+                .Where(n => n.Id == nutritionId && !n.IsDeleted)
+                .FirstOrDefaultAsync(cancellationToken);
         }
-
 
         public async Task<List<Nutrition>?> GetAllAsync(int userId, CancellationToken cancellationToken = default)
         {
