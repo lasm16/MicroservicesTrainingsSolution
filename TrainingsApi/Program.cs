@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using TrainingsApi.BLL.Services;
 using TrainingsApi.Properties;
 using TrainingsApi.Repositories;
-using NSwag.AspNetCore;
+using UsersApi.Repositories;
 
 namespace TrainingsApi
 {
