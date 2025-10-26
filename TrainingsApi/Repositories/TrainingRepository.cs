@@ -9,8 +9,7 @@ namespace TrainingsApi.Repositories
         public async Task<List<Training>> GetAllAsync(int userId, CancellationToken cancellationToken = default)
         {
             return await context.Trainings
-                .Where(t => !t.IsDeleted)
-                .Where(t=> t.UserId == userId)
+                .Where(t => !t.IsDeleted && t.UserId == userId)
                 .ToListAsync(cancellationToken);
         }
 
