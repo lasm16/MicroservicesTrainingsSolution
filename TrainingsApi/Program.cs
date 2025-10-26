@@ -25,8 +25,6 @@ namespace TrainingsApi
 
             builder.Services.AddScoped<ITrainingRepository, TrainingRepository>();
             builder.Services.AddScoped<ITrainingService, TrainingService>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IUserService, UserService>();
 
             builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {

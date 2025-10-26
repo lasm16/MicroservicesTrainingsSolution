@@ -14,14 +14,22 @@ namespace Tests.UserApi.UnitTests
 
         private Mock<IUserRepository> _mockRepository;
         private Mock<IDbListener> _listner;
+        private Mock<IAchievementsService> _achievementsService;
+        private Mock<INutritionsService> _nutritionsService;
+        private Mock<ITrainingsService> _trainingsService;
         private UserService _service;
 
         [TestInitialize]
         public void Setup()
-        {            
+        {
             _mockRepository = new Mock<IUserRepository>();
             _listner = new Mock<IDbListener>();
-            _service = new UserService(_mockRepository.Object, _listner.Object);
+            _achievementsService = new Mock<IAchievementsService>();
+            _trainingsService = new Mock<ITrainingsService>();
+            _nutritionsService = new Mock<INutritionsService>();
+            _service = new UserService(_mockRepository.Object,
+                _listner.Object, _achievementsService.Object,
+                _nutritionsService.Object, _trainingsService.Object);
         }
 
         [TestMethod]
@@ -189,6 +197,99 @@ namespace Tests.UserApi.UnitTests
             Assert.AreEqual("Новое", capturedUser.Name);
             Assert.AreEqual("Фамилия", capturedUser.Surname);
             Assert.AreEqual("new@example.com", capturedUser.Email);
+        }
+
+        [TestMethod]
+        public async Task CreateAsync_ServicesHasData_ServicesReturnValues()
+        {
+            var userEntity = new User { Id = 1, Name = "Анна", Surname = "Иванова", Email = "anna@example.com" };
+            var achievements = GetAchievements();
+            var trainings = GetTrainings();
+            var nutritions = GetNutritions();
+
+            _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(userEntity);
+            _achievementsService.Setup(x => x.GetAllAchievements(1))
+                .ReturnsAsync(achievements);
+            _trainingsService.Setup(x => x.GetAllTrainings(1))
+                .ReturnsAsync(trainings);
+            _nutritionsService.Setup(x => x.GetAllNutritions(1))
+                .ReturnsAsync(nutritions);
+
+            var result = await _service.GetByIdAsync(1, TestContext.CancellationToken);
+
+            _achievementsService.Verify(r => r.GetAllAchievements(1), Times.Once);
+            _nutritionsService.Verify(r => r.GetAllNutritions(1), Times.Once);
+            _trainingsService.Verify(r => r.GetAllTrainings(1), Times.Once);
+
+            Assert.HasCount(1, result.Achievements!);
+            Assert.HasCount(1, result.Nutritions!);
+            Assert.HasCount(1, result.Trainings!);
+        }
+
+        [TestMethod]
+        public async Task CreateAsync_ServicesHasNull_ServicesHasEmptyCollection()
+        {
+            var userEntity = new User { Id = 1, Name = "Анна", Surname = "Иванова", Email = "anna@example.com" };
+
+            _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(userEntity);
+            _achievementsService.Setup(x => x.GetAllAchievements(1))
+                .ReturnsAsync([]);
+            _trainingsService.Setup(x => x.GetAllTrainings(1))
+                .ReturnsAsync([]);
+            _nutritionsService.Setup(x => x.GetAllNutritions(1))
+                .ReturnsAsync([]);
+
+            var result = await _service.GetByIdAsync(1, TestContext.CancellationToken);
+
+            _achievementsService.Verify(r => r.GetAllAchievements(1), Times.Once);
+            _nutritionsService.Verify(r => r.GetAllNutritions(1), Times.Once);
+            _trainingsService.Verify(r => r.GetAllTrainings(1), Times.Once);
+
+            Assert.IsEmpty(result.Achievements!);
+            Assert.IsEmpty(result.Nutritions!);
+            Assert.IsEmpty(result.Trainings!);
+        }
+
+        private static List<NutritionDto> GetNutritions()
+        {
+            return
+            [
+                new() {
+                    Calories = 1,
+                    Description = "asdfas",
+                    NutritionId = 1,
+                }
+            ];
+        }
+
+        private static List<TrainingDto> GetTrainings()
+        {
+            return
+            [
+                new() {
+                    Date = DateTime.Now,
+                    Description = "123",
+                    DurationInMinutes = 3,
+                    Id = 4,
+                    IsCompleted = true,
+                }
+            ];
+        }
+
+        private static List<AchievementDto> GetAchievements()
+        {
+            return
+            [
+                new() {
+                    AchievedDate = DateTime.Now,
+                    Id = 2,
+                    Reward = 3,
+                    Type = DataAccess.Enums.AchievementType.StrengthTraining,
+                    Value = 4
+                }
+            ];
         }
     }
 }
