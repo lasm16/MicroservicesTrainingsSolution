@@ -33,22 +33,31 @@ namespace TrainingsApi.BLL.Services
 
             var context = new TrainingContext(training);
 
-            try
+            // применяем паттерн State
+            switch (dto.Status)
             {
-                if (dto.Status == "InProgress")
+                case "Planned":
+                    training.Status = "Planned";
+                    break;
+
+                case "InProgress":
                     context.Start();
-                else if (dto.Status == "Completed")
+                    break;
+
+                case "Completed":
                     context.Complete();
-                else if (dto.Status == "Cancelled")
+                    break;
+
+                case "Cancelled":
                     context.Cancel();
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException($"Cannot transition training to status '{dto.Status}': {ex.Message}");
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unknown status: {dto.Status}");
             }
 
-            // Обновляем остальные поля
-            TrainingMapper.UpdateEntity(training, dto);
+            training.Status = context.Training.Status ?? dto.Status;
+            training.Updated = dto.Updated;
 
             await repository.UpdateAsync(training, cancellationToken);
         }

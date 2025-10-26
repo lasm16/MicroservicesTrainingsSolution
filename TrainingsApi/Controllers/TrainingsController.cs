@@ -19,7 +19,8 @@ namespace TrainingsApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllTrainingsAsync(int id)
         {
-            var result = await trainingService.GetAllAsync(id);
+            if (userId <= 0) return BadRequest("userId is required");
+            var result = await trainingService.GetAllAsync(userId);
             return Ok(result);
         }
 

@@ -5,6 +5,8 @@ using Microsoft.Extensions.Options;
 using TrainingsApi.BLL.Services;
 using TrainingsApi.Properties;
 using TrainingsApi.Repositories;
+using UsersApi.BLL.Services;
+using UsersApi.Repositories;
 using UsersApi.Repositories;
 
 namespace TrainingsApi
