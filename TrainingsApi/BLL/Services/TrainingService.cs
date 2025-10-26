@@ -1,4 +1,5 @@
-﻿using TrainingsApi.BLL.Helpers;
+﻿using TrainingsApi.BLL.Dtos;
+using TrainingsApi.BLL.Helpers;
 using TrainingsApi.BLL.States;
 using TrainingsApi.Repositories;
 
@@ -12,26 +13,29 @@ namespace TrainingsApi.BLL.Services
             return TrainingMapper.ToDtoList(trainings);
         }
 
-        public async Task<TrainingDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<TrainingDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var training = await repository.GetByIdAsync(id, cancellationToken);
             return training is null ? null : TrainingMapper.ToDto(training);
         }
 
-        public async Task CreateAsync(TrainingDto dto, CancellationToken cancellationToken = default)
+        public async Task CreateAsync(TrainingCreateDto dto, CancellationToken cancellationToken = default)
         {
-            if (dto.UserId <= 0)
-                throw new ArgumentException("UserId is required");
-            if (dto.Date == default)
-                throw new ArgumentException("Date is required");
-            if (dto.DurationInMinutes <= 0)
-                throw new ArgumentException("DurationInMinutes must be greater than 0");
-
-            var training = TrainingMapper.ToEntity(dto);
+            var training = TrainingMapper.FromCreateDto(dto);
             await repository.AddAsync(training, cancellationToken);
         }
 
-        public async Task UpdateAsync(TrainingDto dto, CancellationToken cancellationToken = default)
+        public async Task UpdateAsync(TrainingUpdateDto dto, CancellationToken cancellationToken = default)
+        {
+            var training = await repository.GetByIdAsync(dto.Id, cancellationToken);
+            if (training is null)
+                throw new KeyNotFoundException($"Training with id {dto.Id} not found");
+
+            TrainingMapper.UpdateEntity(training, dto);
+            await repository.UpdateAsync(training, cancellationToken);
+        }
+        
+        public async Task UpdateStatusAsync(TrainingStatusUpdateDto dto, CancellationToken cancellationToken = default)
         {
             var training = await repository.GetByIdAsync(dto.Id, cancellationToken);
             if (training is null)
@@ -39,33 +43,42 @@ namespace TrainingsApi.BLL.Services
 
             var context = new TrainingContext(training);
 
-            try
+            // применяем паттерн State
+            switch (dto.Status)
             {
-                if (dto.Status == "InProgress")
+                case "Planned":
+                    training.Status = "Planned";
+                    break;
+
+                case "InProgress":
                     context.Start();
-                else if (dto.Status == "Completed")
+                    break;
+
+                case "Completed":
                     context.Complete();
-                else if (dto.Status == "Cancelled")
+                    break;
+
+                case "Cancelled":
                     context.Cancel();
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException($"Cannot transition training to status '{dto.Status}': {ex.Message}");
+                    break;
+
+                default:
+                    throw new ArgumentException($"Unknown status: {dto.Status}");
             }
 
-            // Обновляем остальные поля
-            TrainingMapper.UpdateEntity(training, dto);
+            training.Status = context.Training.Status ?? dto.Status;
+            training.Updated = dto.Updated;
 
             await repository.UpdateAsync(training, cancellationToken);
         }
 
-        public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(TrainingDeleteDto dto, CancellationToken cancellationToken = default)
         {
-            var training = await repository.GetByIdAsync(id, cancellationToken);
-            if (training is null)
-                throw new ArgumentException($"Training with id {id} not found");
+            var entity = await repository.GetByIdAsync(dto.Id, cancellationToken)
+                ?? throw new ArgumentException($"Training with id {dto.Id} not found");
 
-            await repository.DeleteAsync(training, cancellationToken);
+            TrainingMapper.MarkDeleted(entity, dto);
+            await repository.UpdateAsync(entity, cancellationToken);
         }
     }
 }

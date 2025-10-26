@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TrainingsApi.BLL.Services;
 using TrainingsApi.Repositories;
-using NSwag.AspNetCore;
+using UsersApi.Repositories;
 
 namespace TrainingsApi
 {

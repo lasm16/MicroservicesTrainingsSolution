@@ -25,8 +25,22 @@ namespace TrainingsApi.BLL.States
             };
         }
 
-        public void Start() => State.Start(this);
-        public void Complete() => State.Complete(this);
-        public void Cancel() => State.Cancel(this);
+        public void Start()
+        {
+            State.Start(this);
+            Training.Status = "InProgress";
+        }
+
+        public void Complete()
+        {
+            State.Complete(this);
+            Training.Status = "Completed";
+        }
+
+        public void Cancel()
+        {
+            State.Cancel(this);
+            Training.Status = "Cancelled";
+        }
     }
 }
