@@ -1,7 +1,5 @@
 ﻿using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using TrainingsApi.BLL;
-
 namespace TrainingsApi.Repositories
 {
     public class TrainingRepository(DataAccess.AppContext context) : ITrainingRepository
@@ -33,8 +31,6 @@ namespace TrainingsApi.Repositories
 
         public async Task DeleteAsync(Training training, CancellationToken cancellationToken = default)
         {
-            training.IsDeleted = true;
-            training.Updated = DateTime.UtcNow;
             context.Trainings.Update(training);
             await context.SaveChangesAsync(cancellationToken);
         }
