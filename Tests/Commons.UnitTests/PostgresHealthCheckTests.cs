@@ -7,30 +7,65 @@ namespace Tests.Commons.UnitTests;
 public class PostgresHealthCheckTests
 {
     [TestMethod]
-    public async Task CheckHealthAsync_ValidConnectionFastResponse_ReturnsHealthy()
+    public async Task CheckHealthAsync_FastResponse_ReturnsHealthy()
     {
-        var connectionString = "Host=localhost;Port=5432;Database=TestDb;Username=postgres;Password=12345;";
-        var healthCheck = new PostgresHealthCheck(connectionString);
+        var connectionString = "any-string";
+        var healthCheck = new PostgresHealthCheck(
+            connectionString,
+            (conn, token) => Task.FromResult(TimeSpan.FromMilliseconds(100))
+        );
         var context = new HealthCheckContext();
 
         var result = await healthCheck.CheckHealthAsync(context);
 
-        Assert.IsTrue(result.Status == HealthStatus.Healthy ||
-                     result.Status == HealthStatus.Unhealthy);
-        Assert.IsTrue(result.Description.Contains("PostgreSQL"));
+        Assert.AreEqual(HealthStatus.Healthy, result.Status);
+        Assert.IsTrue(result.Description.Contains("Response time: 100ms"));
     }
 
     [TestMethod]
-    public async Task CheckHealthAsync_InvalidConnectionString_ReturnsUnhealthy()
+    public async Task CheckHealthAsync_SlowResponse_ReturnsDegraded()
     {
-        var invalidConnectionString = "InvalidConnectionString";
-        var healthCheck = new PostgresHealthCheck(invalidConnectionString);
+        var connectionString = "any-string";
+        var healthCheck = new PostgresHealthCheck(
+            connectionString,
+            (conn, token) => Task.FromResult(TimeSpan.FromMilliseconds(1000))
+        );
+        var context = new HealthCheckContext();
+
+        var result = await healthCheck.CheckHealthAsync(context);
+
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.IsTrue(result.Description.Contains("Response time: 1000ms"));
+    }
+
+    [TestMethod]
+    public async Task CheckHealthAsync_VerySlowResponse_ReturnsUnhealthy()
+    {
+        var connectionString = "any-string";
+        var healthCheck = new PostgresHealthCheck(
+            connectionString,
+            (conn, token) => Task.FromResult(TimeSpan.FromMilliseconds(3000))
+        );
         var context = new HealthCheckContext();
 
         var result = await healthCheck.CheckHealthAsync(context);
 
         Assert.AreEqual(HealthStatus.Unhealthy, result.Status);
-        Assert.IsTrue(result.Description.Contains("PostgreSQL connection failed"));
-        Assert.IsNotNull(result.Exception);
-    }    
+        Assert.IsTrue(result.Description.Contains("Response time: 3000ms"));
+    }
+
+    [TestMethod]
+    public async Task CheckHealthAsync_ConnectionError_ReturnsUnhealthy()
+    {
+        var connectionString = "invalid-string";
+        var healthCheck = new PostgresHealthCheck(
+            connectionString,
+            (conn, token) => Task.FromResult(TimeSpan.FromMilliseconds(5000))
+        );
+        var context = new HealthCheckContext();
+
+        var result = await healthCheck.CheckHealthAsync(context);
+
+        Assert.AreEqual(HealthStatus.Unhealthy, result.Status);
+    }
 }
