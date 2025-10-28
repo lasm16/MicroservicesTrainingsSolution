@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Commons
+namespace Commons.HealthChecks
 {
     public class RequestTimeHealthCheck : IHealthCheck
     {

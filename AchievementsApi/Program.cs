@@ -1,8 +1,10 @@
 using AchievementsApi.Abstractions;
 using AchievementsApi.BLL.Services;
 using AchievementsApi.Repositores;
-using Microsoft.EntityFrameworkCore;
+using Commons.Config;
 using Commons.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AchievementsApi
 {
@@ -20,16 +22,19 @@ namespace AchievementsApi
             builder.Services.AddHostedService<NotificationProcessingService>();
             builder.Services.AddDbContext<DataAccess.AppContext>(x =>
             {
-                var configuration = GetConfiguration();
-                var configurationString = configuration.GetConnectionString("DefaultConnection");
+                var configurationString = builder.Configuration.GetConnectionString("DefaultConnection");
                 x.UseNpgsql(configurationString);
                 x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
 
             builder.Services.AddSingleton(provider =>
-            new PostgresHealthCheck(
-                builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.")));
+            {
+                var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                var options = provider.GetRequiredService<IOptions<HealthCheckConfig>>();
+                return new PostgresHealthCheck(connectionString, options);
+            });
+
             builder.Services.AddHealthChecks()
                             .AddCommonHealthChecks();
 

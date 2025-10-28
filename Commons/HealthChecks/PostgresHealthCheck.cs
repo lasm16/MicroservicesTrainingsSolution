@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Commons.Config;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using System.Diagnostics;
 
@@ -7,20 +9,23 @@ namespace Commons.HealthChecks
     public class PostgresHealthCheck : IHealthCheck
     {
         private readonly string _connectionString;
-        private readonly TimeSpan _degradedThreshold = TimeSpan.FromMilliseconds(500);
-        private readonly TimeSpan _unhealthyThreshold = TimeSpan.FromMilliseconds(2000);
+        private readonly TimeSpan _degradedThreshold;
+        private readonly TimeSpan _unhealthyThreshold;
         private readonly Func<string, CancellationToken, Task<TimeSpan>> _connectionTester;
 
-        public PostgresHealthCheck(string connectionString)
-            : this(connectionString, TestConnectionReal)
+        public PostgresHealthCheck(string connectionString, IOptions<HealthCheckConfig> options)
+            : this(connectionString, options, TestConnection)
         {
         }
 
         public PostgresHealthCheck(
             string connectionString,
+            IOptions<HealthCheckConfig> options,
             Func<string, CancellationToken, Task<TimeSpan>> connectionTester)
         {
             _connectionString = connectionString;
+            _degradedThreshold = options.Value.DegradedThreshold;
+            _unhealthyThreshold = options.Value.UnhealthyThreshold;
             _connectionTester = connectionTester;
         }
 
@@ -46,20 +51,24 @@ namespace Commons.HealthChecks
             }
         }
 
-        private static async Task<TimeSpan> TestConnectionReal(string connectionString, CancellationToken cancellationToken)
+        private static async Task<TimeSpan> TestConnection(string connectionString, CancellationToken cancellationToken)
         {
             var stopwatch = Stopwatch.StartNew();
+
             try
             {
-                await using var connection = new NpgsqlConnection(connectionString);
+                using var connection = new NpgsqlConnection(connectionString);
+                using var command = new NpgsqlCommand("SELECT 1;", connection);
+
                 await connection.OpenAsync(cancellationToken);
-                await using var command = new NpgsqlCommand("SELECT 1;", connection);
                 await command.ExecuteScalarAsync(cancellationToken);
+
                 return stopwatch.Elapsed;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 stopwatch.Stop();
+                Console.WriteLine($"Connection test failed: {ex.Message}");
                 return TimeSpan.FromMilliseconds(3000);
             }
         }

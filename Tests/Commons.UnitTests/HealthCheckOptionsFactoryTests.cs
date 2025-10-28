@@ -43,10 +43,10 @@ public class HealthCheckOptionsFactoryTests
         var responseBody = new StreamReader(context.Response.Body).ReadToEnd();
 
         Assert.AreEqual("application/json", context.Response.ContentType);
-        Assert.IsTrue(responseBody.Contains(serviceName));
-        Assert.IsTrue(responseBody.Contains("Healthy"));
-        Assert.IsTrue(responseBody.Contains("test_check"));
-        Assert.IsTrue(responseBody.Contains("Test check passed"));
+        Assert.Contains(serviceName, responseBody);
+        Assert.Contains("Healthy", responseBody);
+        Assert.Contains("test_check", responseBody);
+        Assert.Contains("Test check passed", responseBody);
     }
 
     [TestMethod]
@@ -74,8 +74,9 @@ public class HealthCheckOptionsFactoryTests
         context.Response.Body.Seek(0, SeekOrigin.Begin);
         var responseBody = new StreamReader(context.Response.Body).ReadToEnd();
 
-        Assert.IsTrue(responseBody.Contains("Unhealthy"));
-        Assert.IsTrue(responseBody.Contains("Database is down"));
-        Assert.IsTrue(responseBody.Contains("db_check"));
+        Assert.Contains("Unhealthy", responseBody);
+        Assert.Contains("Database is down", responseBody);
+        Assert.Contains("db_check", responseBody);
+        Assert.Contains("\"status\": \"Unhealthy\"", responseBody);
     }
 }

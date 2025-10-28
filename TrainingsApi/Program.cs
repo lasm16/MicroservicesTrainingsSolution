@@ -1,5 +1,7 @@
+using Commons.Config;
 using Commons.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using TrainingsApi.BLL.Services;
 using TrainingsApi.Repositories;
 
@@ -31,9 +33,12 @@ namespace TrainingsApi
             });
 
             builder.Services.AddSingleton(provider =>
-            new PostgresHealthCheck(
-                builder.Configuration.GetConnectionString("Npgsql")
-                ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.")));
+            {
+                var connectionString = builder.Configuration.GetConnectionString("Npgsql")
+                    ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
+                var options = provider.GetRequiredService<IOptions<HealthCheckConfig>>();
+                return new PostgresHealthCheck(connectionString, options);
+            });
             
             builder.Services.AddHealthChecks()
                             .AddCommonHealthChecks();
