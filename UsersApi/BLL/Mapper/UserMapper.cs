@@ -41,13 +41,12 @@ namespace UsersApi.BLL.Mapper
             if (IsNull(user) || user.IsDeleted)
                 return null!;
 
-            return new UserResponse
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Surname = user.Surname,
-                Email = user.Email
-            };
+            return new UserResponse.Builder()
+                .SetId(user.Id)
+                .SetName(user.Name)
+                .SetSurname(user.Surname)
+                .SetEmail(user.Email)
+                .Build();
         }
 
         public static void UpdateEntity(UserDto dto, User entity)
