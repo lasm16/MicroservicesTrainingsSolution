@@ -9,10 +9,10 @@ namespace Tests.Commons.UnitTests;
 [TestClass]
 public class PostgresHealthCheckTests
 {
-    private IOptions<HealthCheckConfig> CreateOptions(TimeSpan degraded, TimeSpan unhealthy)
+    private IOptions<PostgresHealthCheckOptions> CreateOptions(TimeSpan degraded, TimeSpan unhealthy)
     {
-        var optionsMock = new Mock<IOptions<HealthCheckConfig>>();
-        var config = new HealthCheckConfig { DegradedThreshold = degraded, UnhealthyThreshold = unhealthy };
+        var optionsMock = new Mock<IOptions<PostgresHealthCheckOptions>>();
+        var config = new PostgresHealthCheckOptions { DegradedThreshold = degraded, UnhealthyThreshold = unhealthy };
         optionsMock.Setup(x => x.Value).Returns(config);
         return optionsMock.Object;
     }

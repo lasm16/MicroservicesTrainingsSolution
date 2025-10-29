@@ -4,6 +4,8 @@ namespace Commons.HealthChecks
 {
     public class RequestTimeHealthCheck : IHealthCheck
     {
+        public const string RequestTimeCheckPassed = "Request time check passed";
+        public const string RequestTimeCheckFailed = "Request time check failed";
         public Task<HealthCheckResult> CheckHealthAsync(
          HealthCheckContext context,
          CancellationToken cancellationToken = default)
@@ -11,12 +13,12 @@ namespace Commons.HealthChecks
             try
             {
                 return Task.FromResult(
-                    HealthCheckResult.Healthy("Request time check passed"));
+                    HealthCheckResult.Healthy(RequestTimeCheckPassed));
             }
             catch (Exception ex)
             {
                 return Task.FromResult(
-                    HealthCheckResult.Unhealthy("Request time check failed", ex));
+                    HealthCheckResult.Unhealthy(RequestTimeCheckFailed, ex));
             }
         }
     }

@@ -36,7 +36,7 @@ namespace TrainingsApi
             {
                 var connectionString = builder.Configuration.GetConnectionString("Npgsql")
                     ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
-                var options = provider.GetRequiredService<IOptions<HealthCheckConfig>>();
+                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckOptions>>();
                 return new PostgresHealthCheck(connectionString, options);
             });
             

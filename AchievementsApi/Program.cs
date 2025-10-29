@@ -31,7 +31,7 @@ namespace AchievementsApi
             {
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-                var options = provider.GetRequiredService<IOptions<HealthCheckConfig>>();
+                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckOptions>>();
                 return new PostgresHealthCheck(connectionString, options);
             });
 

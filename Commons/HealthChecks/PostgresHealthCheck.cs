@@ -9,23 +9,21 @@ namespace Commons.HealthChecks
     public class PostgresHealthCheck : IHealthCheck
     {
         private readonly string _connectionString;
-        private readonly TimeSpan _degradedThreshold;
-        private readonly TimeSpan _unhealthyThreshold;
+        private readonly IOptions<PostgresHealthCheckOptions> _options;
         private readonly Func<string, CancellationToken, Task<TimeSpan>> _connectionTester;
 
-        public PostgresHealthCheck(string connectionString, IOptions<HealthCheckConfig> options)
+        public PostgresHealthCheck(string connectionString, IOptions<PostgresHealthCheckOptions> options)
             : this(connectionString, options, TestConnection)
         {
         }
 
         public PostgresHealthCheck(
             string connectionString,
-            IOptions<HealthCheckConfig> options,
+            IOptions<PostgresHealthCheckOptions> options, 
             Func<string, CancellationToken, Task<TimeSpan>> connectionTester)
         {
             _connectionString = connectionString;
-            _degradedThreshold = options.Value.DegradedThreshold;
-            _unhealthyThreshold = options.Value.UnhealthyThreshold;
+            _options = options; // Сохраняем ссылку на IOptions
             _connectionTester = connectionTester;
         }
 
@@ -37,11 +35,11 @@ namespace Commons.HealthChecks
 
             var message = $"PostgreSQL check completed. Response time: {responseTime.TotalMilliseconds}ms";
 
-            if (responseTime < _degradedThreshold)
+            if (responseTime < _options.Value.DegradedThreshold)
             {
                 return HealthCheckResult.Healthy(message);
             }
-            else if (responseTime < _unhealthyThreshold)
+            else if (responseTime < _options.Value.UnhealthyThreshold)
             {
                 return HealthCheckResult.Degraded(message);
             }

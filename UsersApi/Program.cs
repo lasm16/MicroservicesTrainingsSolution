@@ -32,6 +32,9 @@ namespace UsersApi
             builder.Services.Configure<AppSettingsConfig>(
                 builder.Configuration.GetSection("AppSettingsConfig"));
 
+            builder.Services.Configure<PostgresHealthCheckOptions>(
+                builder.Configuration.GetSection(PostgresHealthCheckOptions.SectionName));         
+           
             builder.Services.AddHttpClient(HttpClientConfig.AchievementsClient, (serviceProvider, client) =>
             {
                 var config = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
@@ -58,7 +61,7 @@ namespace UsersApi
             {
                 var connectionString = builder.Configuration.GetConnectionString("Npgsql")
                     ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
-                var options = provider.GetRequiredService<IOptions<HealthCheckConfig>>();
+                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckOptions>>();
                 return new PostgresHealthCheck(connectionString, options);
             });
 
