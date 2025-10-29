@@ -15,7 +15,6 @@ namespace Tests.UserApi.UnitTests
         public TestContext TestContext { get; set; }
 
         private Mock<IUserRepository> _mockRepository;
-        private Mock<IDbListener> _listner;
         private Mock<IAchievementsService> _achievementsService;
         private Mock<INutritionsService> _nutritionsService;
         private Mock<ITrainingsService> _trainingsService;
@@ -28,7 +27,6 @@ namespace Tests.UserApi.UnitTests
         public void Setup()
         {
             _mockRepository = new Mock<IUserRepository>();
-            _listner = new Mock<IDbListener>();
             _achievementsService = new Mock<IAchievementsService>();
             _trainingsService = new Mock<ITrainingsService>();
             _nutritionsService = new Mock<INutritionsService>();
@@ -43,8 +41,7 @@ namespace Tests.UserApi.UnitTests
             _options = new Mock<IOptions<AppSettingsConfig>>();
             _options.Setup(x => x.Value)
                 .Returns(_appSettingsConfig);
-            _service = new UserService(_mockRepository.Object,
-                _listner.Object, _achievementsService.Object,
+            _service = new UserService(_mockRepository.Object, _achievementsService.Object,
                 _nutritionsService.Object, _trainingsService.Object, _memoryCache, _options.Object);
         }
 
@@ -65,12 +62,13 @@ namespace Tests.UserApi.UnitTests
         [TestMethod]
         public async Task GetByIdAsync_ResponseInCache_ReturnsResponseFromCache()
         {
-            var response = new UserResponse
-            {
-                Id = 1,
-                Name = "Vlad",
-                Surname = "Bulgakov"
-            };
+            var response = new UserResponse.Builder()
+                .SetId(1)
+                .SetName("Vlad")
+                .SetSurname("Bulgakov")
+                .SetEmail("vlad@mail.ru")
+                .Build();
+
             _memoryCache.Set(response.Id, response);
 
             await _service.GetByIdAsync(1, TestContext.CancellationToken);
