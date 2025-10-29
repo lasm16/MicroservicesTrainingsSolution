@@ -1,7 +1,9 @@
-﻿using UsersApi.Abstractions;
-using UsersApi.BLL.Mapper;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using UsersApi.Abstractions;
 using UsersApi.BLL.DTOs;
-using UsersApi.Repositories;
+using UsersApi.BLL.Mapper;
+using UsersApi.Properties;
 
 namespace UsersApi.BLL.Services
 {
@@ -11,29 +13,47 @@ namespace UsersApi.BLL.Services
         private readonly IAchievementsService _achievementService;
         private readonly INutritionsService _nutritionService;
         private readonly ITrainingsService _trainingsService;
+        private readonly IMemoryCache _memoryCache;
+        private readonly AppSettingsConfig _settingsConfig;
 
         public UserService(
-            IUserRepository userRepository, 
-            IDbListener dbListener, 
+            IUserRepository userRepository,
+            IDbListener dbListener,
             IAchievementsService achievementService,
             INutritionsService nutritionsService,
-            ITrainingsService trainingsService)
+            ITrainingsService trainingsService,
+            IMemoryCache memoryCache,
+            IOptions<AppSettingsConfig> settingsConfig)
         {
             _userRepository = userRepository;
             _achievementService = achievementService;
             _nutritionService = nutritionsService;
             _trainingsService = trainingsService;
+            _memoryCache = memoryCache;
+            _settingsConfig = settingsConfig.Value;
             dbListener.OnNotificationReceived += OnUserDeleted;
         }
 
-        public async Task<UserResponse> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<UserResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            var user = await _userRepository.GetByIdAsync(id, cancellationToken);
-            if (user == null) return null;
-            var response = UserMapper.GetUserResponse(user);
-            response.Achievements = await GetAchievementList(id);
-            response.Nutritions = await GetNutritionList(id);
-            response.Trainings = await GetTrainingsList(id);
+            _memoryCache.TryGetValue(id, out UserResponse? response);
+            if (response == null)
+            {
+                var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+                if (user == null) return null;
+
+                response = UserMapper.GetUserResponse(user);
+                response.Achievements = await GetAchievementList(id);
+                response.Nutritions = await GetNutritionList(id);
+                response.Trainings = await GetTrainingsList(id);
+                Console.WriteLine($"Пользователь с Id={user.Id} извлечен из базы данных");
+                var options = GetMemoryCacheOptions();
+                _memoryCache.Set(response.Id, response, options);
+            }
+            else
+            {
+                Console.WriteLine($"Пользователь с Id={response!.Id} извлечен из кэша");
+            }
             return response;
         }
 
@@ -103,6 +123,12 @@ namespace UsersApi.BLL.Services
         private async Task<List<TrainingDto>> GetTrainingsList(int id)
         {
             return await _trainingsService.GetAllTrainings(id);
+        }
+
+        private MemoryCacheEntryOptions GetMemoryCacheOptions()
+        {
+            var expirationTime = TimeSpan.FromSeconds(_settingsConfig.CacheSettings!.AbsoluteExpirationFromSeconds);
+            return new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime);
         }
     }
 }

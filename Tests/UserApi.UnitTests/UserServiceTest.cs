@@ -1,9 +1,11 @@
 ﻿using DataAccess.Models;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Moq;
 using UsersApi.Abstractions;
 using UsersApi.BLL.DTOs;
 using UsersApi.BLL.Services;
-using UsersApi.Repositories;
+using UsersApi.Properties;
 
 namespace Tests.UserApi.UnitTests
 {
@@ -17,6 +19,9 @@ namespace Tests.UserApi.UnitTests
         private Mock<IAchievementsService> _achievementsService;
         private Mock<INutritionsService> _nutritionsService;
         private Mock<ITrainingsService> _trainingsService;
+        private IMemoryCache _memoryCache;
+        private AppSettingsConfig _appSettingsConfig;
+        private Mock<IOptions<AppSettingsConfig>> _options;
         private UserService _service;
 
         [TestInitialize]
@@ -27,9 +32,20 @@ namespace Tests.UserApi.UnitTests
             _achievementsService = new Mock<IAchievementsService>();
             _trainingsService = new Mock<ITrainingsService>();
             _nutritionsService = new Mock<INutritionsService>();
+            _memoryCache = new MemoryCache(new MemoryCacheOptions());
+            _appSettingsConfig = new AppSettingsConfig
+            {
+                CacheSettings = new CacheSettings
+                {
+                    AbsoluteExpirationFromSeconds = 1
+                }
+            };
+            _options = new Mock<IOptions<AppSettingsConfig>>();
+            _options.Setup(x => x.Value)
+                .Returns(_appSettingsConfig);
             _service = new UserService(_mockRepository.Object,
                 _listner.Object, _achievementsService.Object,
-                _nutritionsService.Object, _trainingsService.Object);
+                _nutritionsService.Object, _trainingsService.Object, _memoryCache, _options.Object);
         }
 
         [TestMethod]
@@ -206,7 +222,7 @@ namespace Tests.UserApi.UnitTests
             var achievements = GetAchievements();
             var trainings = GetTrainings();
             var nutritions = GetNutritions();
-
+            
             _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
                           .ReturnsAsync(userEntity);
             _achievementsService.Setup(x => x.GetAllAchievements(1))
@@ -215,7 +231,7 @@ namespace Tests.UserApi.UnitTests
                 .ReturnsAsync(trainings);
             _nutritionsService.Setup(x => x.GetAllNutritions(1))
                 .ReturnsAsync(nutritions);
-
+            
             var result = await _service.GetByIdAsync(1, TestContext.CancellationToken);
 
             _achievementsService.Verify(r => r.GetAllAchievements(1), Times.Once);
