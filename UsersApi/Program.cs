@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using UsersApi.Abstractions;
 using UsersApi.BLL.Mapper;
 using UsersApi.BLL.Services;
+using UsersApi.Properties;
 using UsersApi.Repositories;
 
 namespace UsersApi
@@ -11,22 +14,42 @@ namespace UsersApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddScoped<UserMapper>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IUserService,UserService>();            
-           
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IAchievementsService, BLL.Services.AchievementsService>();
+            builder.Services.AddScoped<INutritionsService, BLL.Services.NutritionsService>();
+            builder.Services.AddScoped<ITrainingsService, BLL.Services.TrainingsService>();
+            builder.Services.Configure<AppSettingsConfig>(
+                builder.Configuration.GetSection("AppSettingsConfig"));
+            builder.Services.AddMemoryCache();
+
+            builder.Services.AddHttpClient(HttpClientConfig.AchievementsClient, (serviceProvider, client) =>
+            {
+                var config = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+                client.BaseAddress = new Uri(config.AchievementsService!.Address!);
+                client.Timeout = TimeSpan.FromMilliseconds(config.AchievementsService.TimeoutMilliseconds);
+            });
+            builder.Services.AddHttpClient(HttpClientConfig.NutritionsClient, (serviceProvider, client) =>
+            {
+                var config = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+                client.BaseAddress = new Uri(config.NutritionsService!.Address!);
+                client.Timeout = TimeSpan.FromMilliseconds(config.NutritionsService.TimeoutMilliseconds);
+            });
+            builder.Services.AddHttpClient(HttpClientConfig.TrainingsClient, (serviceProvider, client) =>
+            {
+                var config = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+                client.BaseAddress = new Uri(config.TrainingsService!.Address!);
+                client.Timeout = TimeSpan.FromMilliseconds(config.TrainingsService.TimeoutMilliseconds);
+            });
+
             builder.Services.AddDbContext<DataAccess.AppContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("TrainingsDb"))
-);
+                options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql")));
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();

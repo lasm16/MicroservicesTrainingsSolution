@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UsersApi.BLL.Models;
-using UsersApi.BLL.Services;
+using UsersApi.Abstractions;
+using UsersApi.BLL.DTOs;
 
 namespace UsersApi.Controllers
 {
@@ -8,19 +8,19 @@ namespace UsersApi.Controllers
     [Route("api/[controller]")]
     public class UsersController(IUserService userService) : ControllerBase
     {
-        [HttpGet("{id:int}")]
+        [HttpGet("get-user/{id:int}")]
         public async Task<IActionResult> GetUserAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
-            var userDto = await userService.GetByIdAsync(id, cancellationToken);
+            var response = await userService.GetByIdAsync(id, cancellationToken);
 
-            if (userDto == null)
+            if (response == null)
                 return NotFound();
 
-            var fullName = $"{userDto.Name} {userDto.Surname}".Trim();
-            return Ok(new { userName = fullName });
+            var fullName = $"{response.Name} {response.Surname}".Trim();
+            return Ok(new { userName = fullName, response.Achievements, response.Nutritions, response.Trainings });
         }
 
-        [HttpGet]
+        [HttpGet("get-all-users")]
         public async Task<IActionResult> GetAllUsersAsync(CancellationToken cancellationToken)
         {
             var usersDto = await userService.GetAllAsync(cancellationToken);
@@ -35,7 +35,7 @@ namespace UsersApi.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("api/create")]
         public async Task<IActionResult> CreateUserAsync(
             [FromBody] UserRequest request,
             CancellationToken cancellationToken)
@@ -44,16 +44,16 @@ namespace UsersApi.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateUserAsync(            
+        [HttpPut("update-user")]
+        public async Task<IActionResult> UpdateUserAsync(
             [FromBody] UserRequest request,
             CancellationToken cancellationToken)
         {
-            var success = await userService.UpdateAsync(request, cancellationToken);
+            await userService.UpdateAsync(request, cancellationToken);
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("delete-user/{id:int}")]
         public async Task<IActionResult> DeleteUserAsync([FromRoute] int id, CancellationToken cancellationToken)
         {
             await userService.DeleteAsync(id, cancellationToken);

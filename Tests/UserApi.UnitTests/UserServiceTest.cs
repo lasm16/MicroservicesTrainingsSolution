@@ -1,14 +1,11 @@
 ﻿using DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UsersApi.BLL.Models;
+using UsersApi.Abstractions;
+using UsersApi.BLL.DTOs;
 using UsersApi.BLL.Services;
-using UsersApi.Repositories;
+using UsersApi.Properties;
 
 namespace Tests.UserApi.UnitTests
 {
@@ -18,13 +15,34 @@ namespace Tests.UserApi.UnitTests
         public TestContext TestContext { get; set; }
 
         private Mock<IUserRepository> _mockRepository;
+        private Mock<IAchievementsService> _achievementsService;
+        private Mock<INutritionsService> _nutritionsService;
+        private Mock<ITrainingsService> _trainingsService;
+        private IMemoryCache _memoryCache;
+        private AppSettingsConfig _appSettingsConfig;
+        private Mock<IOptions<AppSettingsConfig>> _options;
         private UserService _service;
 
         [TestInitialize]
         public void Setup()
-        {            
+        {
             _mockRepository = new Mock<IUserRepository>();
-            _service = new UserService(_mockRepository.Object);
+            _achievementsService = new Mock<IAchievementsService>();
+            _trainingsService = new Mock<ITrainingsService>();
+            _nutritionsService = new Mock<INutritionsService>();
+            _memoryCache = new MemoryCache(new MemoryCacheOptions());
+            _appSettingsConfig = new AppSettingsConfig
+            {
+                CacheSettings = new CacheSettings
+                {
+                    AbsoluteExpirationFromSeconds = 1
+                }
+            };
+            _options = new Mock<IOptions<AppSettingsConfig>>();
+            _options.Setup(x => x.Value)
+                .Returns(_appSettingsConfig);
+            _service = new UserService(_mockRepository.Object, _achievementsService.Object,
+                _nutritionsService.Object, _trainingsService.Object, _memoryCache, _options.Object);
         }
 
         [TestMethod]
@@ -42,6 +60,22 @@ namespace Tests.UserApi.UnitTests
         }
 
         [TestMethod]
+        public async Task GetByIdAsync_ResponseInCache_ReturnsResponseFromCache()
+        {
+            var response = new UserResponse.Builder()
+                .SetId(1)
+                .SetName("Vlad")
+                .SetSurname("Bulgakov")
+                .SetEmail("vlad@mail.ru")
+                .Build();
+
+            _memoryCache.Set(response.Id, response);
+
+            await _service.GetByIdAsync(1, TestContext.CancellationToken);
+            _mockRepository.Verify(x => x.GetByIdAsync(It.IsAny<int>(), TestContext.CancellationToken), Times.Never);
+        }
+
+        [TestMethod]
         public async Task DeleteAsync_IdZero_ReturnsFalse()
         {
             var result = await _service.DeleteAsync(0, TestContext.CancellationToken);
@@ -56,7 +90,7 @@ namespace Tests.UserApi.UnitTests
 
             var result = await _service.GetAllAsync(TestContext.CancellationToken);
 
-            Assert.AreEqual(0, result.Count);
+            Assert.IsEmpty(result);
         }
 
         [TestMethod]
@@ -106,15 +140,16 @@ namespace Tests.UserApi.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task CreateAsync_RepositoryThrows_ExceptionIsPropagated()
         {
             var request = new UserRequest { Name = "Ошибка" };
             _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
                           .ThrowsAsync(new Exception("DB failed"));
 
-            await _service.CreateAsync(request, TestContext.CancellationToken);
+            await Assert.ThrowsAsync<Exception>(async () =>
+                await _service.CreateAsync(request, TestContext.CancellationToken));
         }
+
         [TestMethod]
         public async Task CreateAsync_WithExistingIdInDb_ThrowsException()
         {
@@ -136,6 +171,7 @@ namespace Tests.UserApi.UnitTests
 
             _mockRepository.Verify(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never());
         }
+
         [TestMethod]
         public async Task DeleteAsync_NegativeId_ReturnsFalse()
         {
@@ -192,6 +228,99 @@ namespace Tests.UserApi.UnitTests
             Assert.AreEqual("Новое", capturedUser.Name);
             Assert.AreEqual("Фамилия", capturedUser.Surname);
             Assert.AreEqual("new@example.com", capturedUser.Email);
+        }
+
+        [TestMethod]
+        public async Task CreateAsync_ServicesHasData_ServicesReturnValues()
+        {
+            var userEntity = new User { Id = 1, Name = "Анна", Surname = "Иванова", Email = "anna@example.com" };
+            var achievements = GetAchievements();
+            var trainings = GetTrainings();
+            var nutritions = GetNutritions();
+
+            _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(userEntity);
+            _achievementsService.Setup(x => x.GetAllAchievements(1))
+                .ReturnsAsync(achievements);
+            _trainingsService.Setup(x => x.GetAllTrainings(1))
+                .ReturnsAsync(trainings);
+            _nutritionsService.Setup(x => x.GetAllNutritions(1))
+                .ReturnsAsync(nutritions);
+
+            var result = await _service.GetByIdAsync(1, TestContext.CancellationToken);
+
+            _achievementsService.Verify(r => r.GetAllAchievements(1), Times.Once);
+            _nutritionsService.Verify(r => r.GetAllNutritions(1), Times.Once);
+            _trainingsService.Verify(r => r.GetAllTrainings(1), Times.Once);
+
+            Assert.HasCount(1, result.Achievements!);
+            Assert.HasCount(1, result.Nutritions!);
+            Assert.HasCount(1, result.Trainings!);
+        }
+
+        [TestMethod]
+        public async Task CreateAsync_ServicesHasNull_ServicesHasEmptyCollection()
+        {
+            var userEntity = new User { Id = 1, Name = "Анна", Surname = "Иванова", Email = "anna@example.com" };
+
+            _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+                          .ReturnsAsync(userEntity);
+            _achievementsService.Setup(x => x.GetAllAchievements(1))
+                .ReturnsAsync([]);
+            _trainingsService.Setup(x => x.GetAllTrainings(1))
+                .ReturnsAsync([]);
+            _nutritionsService.Setup(x => x.GetAllNutritions(1))
+                .ReturnsAsync([]);
+
+            var result = await _service.GetByIdAsync(1, TestContext.CancellationToken);
+
+            _achievementsService.Verify(r => r.GetAllAchievements(1), Times.Once);
+            _nutritionsService.Verify(r => r.GetAllNutritions(1), Times.Once);
+            _trainingsService.Verify(r => r.GetAllTrainings(1), Times.Once);
+
+            Assert.IsEmpty(result.Achievements!);
+            Assert.IsEmpty(result.Nutritions!);
+            Assert.IsEmpty(result.Trainings!);
+        }
+
+        private static List<NutritionDto> GetNutritions()
+        {
+            return
+            [
+                new() {
+                    Calories = 1,
+                    Description = "asdfas",
+                    NutritionId = 1,
+                }
+            ];
+        }
+
+        private static List<TrainingDto> GetTrainings()
+        {
+            return
+            [
+                new() {
+                    Date = DateTime.Now,
+                    Description = "123",
+                    DurationInMinutes = 3,
+                    Id = 4,
+                    IsCompleted = true,
+                }
+            ];
+        }
+
+        private static List<AchievementDto> GetAchievements()
+        {
+            return
+            [
+                new() {
+                    AchievedDate = DateTime.Now,
+                    Id = 2,
+                    Reward = 3,
+                    Type = DataAccess.Enums.AchievementType.StrengthTraining,
+                    Value = 4
+                }
+            ];
         }
     }
 }

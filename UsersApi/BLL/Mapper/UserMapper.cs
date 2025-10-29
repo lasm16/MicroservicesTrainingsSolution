@@ -1,5 +1,5 @@
 ﻿using DataAccess.Models;
-using UsersApi.BLL.Models;
+using UsersApi.BLL.DTOs;
 
 namespace UsersApi.BLL.Mapper
 {
@@ -35,6 +35,20 @@ namespace UsersApi.BLL.Mapper
                 Email = entity.Email
             };
         }
+
+        public static UserResponse GetUserResponse(User user)
+        {
+            if (IsNull(user) || user.IsDeleted)
+                return null!;
+
+            return new UserResponse.Builder()
+                .SetId(user.Id)
+                .SetName(user.Name)
+                .SetSurname(user.Surname)
+                .SetEmail(user.Email)
+                .Build();
+        }
+
         public static void UpdateEntity(UserDto dto, User entity)
         {
             if (IsNull(dto) || IsNull(entity))
@@ -50,7 +64,7 @@ namespace UsersApi.BLL.Mapper
         {
             return obj == null;
         }
-        public static UserDto MapToUserDto(UserRequest request )
+        public static UserDto MapToUserDto(UserRequest request)
         {
             return new UserDto
             {
