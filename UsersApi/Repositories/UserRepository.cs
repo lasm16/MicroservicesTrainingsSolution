@@ -1,5 +1,6 @@
 ﻿using DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
+using UsersApi.Abstractions;
 
 namespace UsersApi.Repositories
 {

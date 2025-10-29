@@ -1,9 +1,11 @@
 ﻿using DataAccess.Models;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Moq;
 using UsersApi.Abstractions;
 using UsersApi.BLL.DTOs;
 using UsersApi.BLL.Services;
-using UsersApi.Repositories;
+using UsersApi.Properties;
 
 namespace Tests.UserApi.UnitTests
 {
@@ -17,6 +19,9 @@ namespace Tests.UserApi.UnitTests
         private Mock<IAchievementsService> _achievementsService;
         private Mock<INutritionsService> _nutritionsService;
         private Mock<ITrainingsService> _trainingsService;
+        private IMemoryCache _memoryCache;
+        private AppSettingsConfig _appSettingsConfig;
+        private Mock<IOptions<AppSettingsConfig>> _options;
         private UserService _service;
 
         [TestInitialize]
@@ -27,9 +32,20 @@ namespace Tests.UserApi.UnitTests
             _achievementsService = new Mock<IAchievementsService>();
             _trainingsService = new Mock<ITrainingsService>();
             _nutritionsService = new Mock<INutritionsService>();
+            _memoryCache = new MemoryCache(new MemoryCacheOptions());
+            _appSettingsConfig = new AppSettingsConfig
+            {
+                CacheSettings = new CacheSettings
+                {
+                    AbsoluteExpirationFromSeconds = 1
+                }
+            };
+            _options = new Mock<IOptions<AppSettingsConfig>>();
+            _options.Setup(x => x.Value)
+                .Returns(_appSettingsConfig);
             _service = new UserService(_mockRepository.Object,
                 _listner.Object, _achievementsService.Object,
-                _nutritionsService.Object, _trainingsService.Object);
+                _nutritionsService.Object, _trainingsService.Object, _memoryCache, _options.Object);
         }
 
         [TestMethod]
@@ -47,6 +63,21 @@ namespace Tests.UserApi.UnitTests
         }
 
         [TestMethod]
+        public async Task GetByIdAsync_ResponseInCache_ReturnsResponseFromCache()
+        {
+            var response = new UserResponse
+            {
+                Id = 1,
+                Name = "Vlad",
+                Surname = "Bulgakov"
+            };
+            _memoryCache.Set(response.Id, response);
+
+            await _service.GetByIdAsync(1, TestContext.CancellationToken);
+            _mockRepository.Verify(x => x.GetByIdAsync(It.IsAny<int>(), TestContext.CancellationToken), Times.Never);
+        }
+
+        [TestMethod]
         public async Task DeleteAsync_IdZero_ReturnsFalse()
         {
             var result = await _service.DeleteAsync(0, TestContext.CancellationToken);
@@ -61,7 +92,7 @@ namespace Tests.UserApi.UnitTests
 
             var result = await _service.GetAllAsync(TestContext.CancellationToken);
 
-            Assert.AreEqual(0, result.Count);
+            Assert.IsEmpty(result);
         }
 
         [TestMethod]
@@ -111,15 +142,16 @@ namespace Tests.UserApi.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task CreateAsync_RepositoryThrows_ExceptionIsPropagated()
         {
             var request = new UserRequest { Name = "Ошибка" };
             _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
                           .ThrowsAsync(new Exception("DB failed"));
 
-            await _service.CreateAsync(request, TestContext.CancellationToken);
+            await Assert.ThrowsAsync<Exception>(async () =>
+                await _service.CreateAsync(request, TestContext.CancellationToken));
         }
+
         [TestMethod]
         public async Task CreateAsync_WithExistingIdInDb_ThrowsException()
         {
@@ -141,6 +173,7 @@ namespace Tests.UserApi.UnitTests
 
             _mockRepository.Verify(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never());
         }
+
         [TestMethod]
         public async Task DeleteAsync_NegativeId_ReturnsFalse()
         {

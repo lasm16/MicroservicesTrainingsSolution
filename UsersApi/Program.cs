@@ -30,7 +30,7 @@ namespace UsersApi
             builder.Services.AddHostedService(provider =>
                 (DbNotificationListener)provider.GetRequiredService<IDbListener>());
             builder.Services.Configure<AppSettingsConfig>(
-                builder.Configuration.GetSection("AppSettingsConfig"));                   
+                builder.Configuration.GetSection("AppSettingsConfig"));                 
            
             builder.Services.AddHttpClient(HttpClientConfig.AchievementsClient, (serviceProvider, client) =>
             {
