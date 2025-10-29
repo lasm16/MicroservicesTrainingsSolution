@@ -63,6 +63,21 @@ namespace Tests.UserApi.UnitTests
         }
 
         [TestMethod]
+        public async Task GetByIdAsync_ResponseInCache_ReturnsResponseFromCache()
+        {
+            var response = new UserResponse
+            {
+                Id = 1,
+                Name = "Vlad",
+                Surname = "Bulgakov"
+            };
+            _memoryCache.Set(response.Id, response);
+
+            await _service.GetByIdAsync(1, TestContext.CancellationToken);
+            _mockRepository.Verify(x => x.GetByIdAsync(It.IsAny<int>(), TestContext.CancellationToken), Times.Never);
+        }
+
+        [TestMethod]
         public async Task DeleteAsync_IdZero_ReturnsFalse()
         {
             var result = await _service.DeleteAsync(0, TestContext.CancellationToken);
@@ -77,7 +92,7 @@ namespace Tests.UserApi.UnitTests
 
             var result = await _service.GetAllAsync(TestContext.CancellationToken);
 
-            Assert.AreEqual(0, result.Count);
+            Assert.IsEmpty(result);
         }
 
         [TestMethod]
@@ -127,15 +142,16 @@ namespace Tests.UserApi.UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task CreateAsync_RepositoryThrows_ExceptionIsPropagated()
         {
             var request = new UserRequest { Name = "Ошибка" };
             _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
                           .ThrowsAsync(new Exception("DB failed"));
 
-            await _service.CreateAsync(request, TestContext.CancellationToken);
+            await Assert.ThrowsAsync<Exception>(async () =>
+                await _service.CreateAsync(request, TestContext.CancellationToken));
         }
+
         [TestMethod]
         public async Task CreateAsync_WithExistingIdInDb_ThrowsException()
         {
@@ -157,6 +173,7 @@ namespace Tests.UserApi.UnitTests
 
             _mockRepository.Verify(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never());
         }
+
         [TestMethod]
         public async Task DeleteAsync_NegativeId_ReturnsFalse()
         {
@@ -222,7 +239,7 @@ namespace Tests.UserApi.UnitTests
             var achievements = GetAchievements();
             var trainings = GetTrainings();
             var nutritions = GetNutritions();
-            
+
             _mockRepository.Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
                           .ReturnsAsync(userEntity);
             _achievementsService.Setup(x => x.GetAllAchievements(1))
@@ -231,7 +248,7 @@ namespace Tests.UserApi.UnitTests
                 .ReturnsAsync(trainings);
             _nutritionsService.Setup(x => x.GetAllNutritions(1))
                 .ReturnsAsync(nutritions);
-            
+
             var result = await _service.GetByIdAsync(1, TestContext.CancellationToken);
 
             _achievementsService.Verify(r => r.GetAllAchievements(1), Times.Once);
