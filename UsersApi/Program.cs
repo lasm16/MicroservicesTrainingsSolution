@@ -28,6 +28,7 @@ namespace UsersApi
                 (DbNotificationListener)provider.GetRequiredService<IDbListener>());
             builder.Services.Configure<AppSettingsConfig>(
                 builder.Configuration.GetSection("AppSettingsConfig"));
+            builder.Services.AddMemoryCache();
 
             builder.Services.AddHttpClient(HttpClientConfig.AchievementsClient, (serviceProvider, client) =>
             {
