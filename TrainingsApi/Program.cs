@@ -31,13 +31,14 @@ namespace TrainingsApi
                                        ?? throw new InvalidOperationException("Connection string not found.");
                 x.UseNpgsql(connectionString);
             });
-
+            
             builder.Services.AddSingleton(provider =>
             {
+                var postgresConfig = PostgresHealthCheckConfig.LoadFromEmbeddedResource();
                 var connectionString = builder.Configuration.GetConnectionString("Npgsql")
                     ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
-                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckOptions>>();
-                return new PostgresHealthCheck(connectionString, options);
+                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();
+                return new PostgresHealthCheck(connectionString, postgresConfig);
             });
             
             builder.Services.AddHealthChecks()

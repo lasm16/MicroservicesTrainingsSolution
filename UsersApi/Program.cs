@@ -30,7 +30,7 @@ namespace UsersApi
             builder.Services.AddHostedService(provider =>
                 (DbNotificationListener)provider.GetRequiredService<IDbListener>());
             builder.Services.Configure<AppSettingsConfig>(
-                builder.Configuration.GetSection("AppSettingsConfig"));                 
+                builder.Configuration.GetSection("AppSettingsConfig"));                   
            
             builder.Services.AddHttpClient(HttpClientConfig.AchievementsClient, (serviceProvider, client) =>
             {
@@ -53,17 +53,19 @@ namespace UsersApi
 
             builder.Services.AddDbContext<DataAccess.AppContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql")));
-
+            
             builder.Services.AddSingleton(provider =>
             {
+                var postgresConfig = PostgresHealthCheckConfig.LoadFromEmbeddedResource();
                 var connectionString = builder.Configuration.GetConnectionString("Npgsql")
                     ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
-                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckOptions>>();
-                return new PostgresHealthCheck(connectionString, options);
+                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();
+                return new PostgresHealthCheck(connectionString, postgresConfig);
             });
 
             builder.Services.AddHealthChecks()
-                            .AddCommonHealthChecks();                
+                            .AddCheck<RequestTimeHealthCheck>(HealthChecksExtensions.RequestTimeCheckName) 
+                            .AddCheck<PostgresHealthCheck>(HealthChecksExtensions.PostgreSqlConnectionCheckName);
 
             var app = builder.Build();
 

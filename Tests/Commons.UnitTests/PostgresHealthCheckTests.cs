@@ -9,12 +9,13 @@ namespace Tests.Commons.UnitTests;
 [TestClass]
 public class PostgresHealthCheckTests
 {
-    private IOptions<PostgresHealthCheckOptions> CreateOptions(TimeSpan degraded, TimeSpan unhealthy)
+    private PostgresHealthCheckConfig CreateOptions(TimeSpan degraded, TimeSpan unhealthy)
     {
-        var optionsMock = new Mock<IOptions<PostgresHealthCheckOptions>>();
-        var config = new PostgresHealthCheckOptions { DegradedThreshold = degraded, UnhealthyThreshold = unhealthy };
-        optionsMock.Setup(x => x.Value).Returns(config);
-        return optionsMock.Object;
+        return new PostgresHealthCheckConfig
+        {
+            DegradedThresholdMilliseconds = degraded,
+            UnhealthyThresholdMilliseconds = unhealthy
+        };
     }
     [TestMethod]
     public async Task CheckHealthAsync_FastResponse_ReturnsHealthy()
@@ -27,7 +28,7 @@ public class PostgresHealthCheckTests
         var healthCheck = new PostgresHealthCheck(
             connectionString,
             options,
-            (conn, token) => Task.FromResult(TimeSpan.FromMilliseconds(100)) // connectionTester
+            (conn, token) => Task.FromResult(TimeSpan.FromMilliseconds(100)) 
         );
         var context = new HealthCheckContext();
 

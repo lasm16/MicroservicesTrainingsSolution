@@ -29,10 +29,11 @@ namespace AchievementsApi
 
             builder.Services.AddSingleton(provider =>
             {
+                var postgresConfig = PostgresHealthCheckConfig.LoadFromEmbeddedResource();
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckOptions>>();
-                return new PostgresHealthCheck(connectionString, options);
+                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();
+                return new PostgresHealthCheck(connectionString, postgresConfig);
             });
 
             builder.Services.AddHealthChecks()

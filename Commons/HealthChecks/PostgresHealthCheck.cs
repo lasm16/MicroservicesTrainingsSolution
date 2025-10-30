@@ -9,21 +9,21 @@ namespace Commons.HealthChecks
     public class PostgresHealthCheck : IHealthCheck
     {
         private readonly string _connectionString;
-        private readonly IOptions<PostgresHealthCheckOptions> _options;
+        private readonly PostgresHealthCheckConfig _config;
         private readonly Func<string, CancellationToken, Task<TimeSpan>> _connectionTester;
 
-        public PostgresHealthCheck(string connectionString, IOptions<PostgresHealthCheckOptions> options)
-            : this(connectionString, options, TestConnection)
+        public PostgresHealthCheck(string connectionString, PostgresHealthCheckConfig config)
+            : this(connectionString, config, TestConnection)
         {
         }
 
         public PostgresHealthCheck(
             string connectionString,
-            IOptions<PostgresHealthCheckOptions> options, 
+            PostgresHealthCheckConfig config,
             Func<string, CancellationToken, Task<TimeSpan>> connectionTester)
         {
             _connectionString = connectionString;
-            _options = options; // Сохраняем ссылку на IOptions
+            _config = config;
             _connectionTester = connectionTester;
         }
 
@@ -35,11 +35,11 @@ namespace Commons.HealthChecks
 
             var message = $"PostgreSQL check completed. Response time: {responseTime.TotalMilliseconds}ms";
 
-            if (responseTime < _options.Value.DegradedThreshold)
+            if (responseTime < _config.DegradedThresholdMilliseconds)
             {
                 return HealthCheckResult.Healthy(message);
             }
-            else if (responseTime < _options.Value.UnhealthyThreshold)
+            else if (responseTime < _config.UnhealthyThresholdMilliseconds)
             {
                 return HealthCheckResult.Degraded(message);
             }
@@ -60,15 +60,16 @@ namespace Commons.HealthChecks
 
                 await connection.OpenAsync(cancellationToken);
                 await command.ExecuteScalarAsync(cancellationToken);
-
+                stopwatch.Stop();
                 return stopwatch.Elapsed;
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
                 Console.WriteLine($"Connection test failed: {ex.Message}");
-                return TimeSpan.FromMilliseconds(3000);
+                return stopwatch.Elapsed;
             }
         }
     }
 }
+
