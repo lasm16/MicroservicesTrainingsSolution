@@ -11,6 +11,7 @@ namespace Commons.Config
         public static PostgresHealthCheckConfig LoadFromEmbeddedResource()
         {
             var assembly = Assembly.GetExecutingAssembly();
+            
             var resourceName = "Commons.appsettings.json";
 
             using var stream = assembly.GetManifestResourceStream(resourceName);
@@ -22,7 +23,8 @@ namespace Commons.Config
                 {
                     Console.WriteLine($" - {name}");
                 }
-                throw new InvalidOperationException($"Embedded resource '{resourceName}' not found in assembly '{assembly.FullName}'. Check the file name and Build Action (should be Embedded Resource).");
+                throw new InvalidOperationException($"Embedded resource '{resourceName}' not found in assembly '{assembly.FullName}'" +
+                    $". Check the file name and Build Action (should be Embedded Resource).");
             }
 
             using var reader = new StreamReader(stream);
