@@ -1,13 +1,22 @@
 ﻿using AchievementsApi.Abstractions;
 using AchievementsApi.BLL.DTO;
+using AchievementsApi.Properties;
+using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
 
 namespace AchievementsApi.BLL.Services
 {
     public class NotificationService : INotificationService
     {
+        private readonly int _handlerCount;
         private readonly ConcurrentQueue<Notification> _notificationQueue = new();
-        private readonly SemaphoreSlim _semaphore = new(5);
+        private readonly SemaphoreSlim _semaphore;
+
+        public NotificationService(IOptions<NotificationServiceConfig> options)
+        {
+            _handlerCount = options.Value.SemaphoreHandlerCount;
+            _semaphore = new(_handlerCount);
+        }
 
         public void AddNotification(string message)
         {

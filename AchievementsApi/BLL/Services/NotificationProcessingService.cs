@@ -1,19 +1,22 @@
 ﻿using AchievementsApi.Abstractions;
+using AchievementsApi.Properties;
+using Microsoft.Extensions.Options;
 
 namespace AchievementsApi.BLL.Services
 {
-    public sealed class NotificationProcessingService(INotificationService notificationService) : BackgroundService
+    public sealed class NotificationProcessingService(
+        INotificationService notificationService, 
+        IOptions<NotificationServiceConfig> options) : BackgroundService
     {
-        private readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(10);
-        private readonly INotificationService _notificationService = notificationService;
+        private readonly int _processingInterval = options.Value.ProcessingIntervalSeconds;
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                // Выполняем обработку уведомлений каждые N секунд
-                await _notificationService.ProcessNotificationsAsync();
-                await Task.Delay(_processingInterval, cancellationToken);
+                await notificationService.ProcessNotificationsAsync();
+                var delay = TimeSpan.FromSeconds(_processingInterval);
+                await Task.Delay(delay, cancellationToken);
             }
         }
     }

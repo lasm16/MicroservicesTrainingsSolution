@@ -5,44 +5,42 @@ using Microsoft.AspNetCore.Mvc;
 namespace AchievementsApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class AchievementsController(IAchievementService achievementService) : ControllerBase
     {
-        private readonly IAchievementService _achievementService = achievementService;
-
-        [HttpGet("get/{id:int}")]
-        public async Task<IActionResult> GetAchievementAsync([FromRoute] int id)
+        [HttpGet("{achievementId:int}")]
+        public async Task<IActionResult> GetAchievementAsync([FromRoute] int achievementId)
         {
-            var response = await _achievementService.GetByIdAsync(id);
-            return response == null ? BadRequest($"Не найдено достижение с id={id}!") : Ok(response);
+            var response = await achievementService.GetByIdAsync(achievementId);
+            return response == null ? BadRequest($"Не найдено достижение с id={achievementId}!") : Ok(response);
         }
 
-        [HttpGet("get-all/{userId:int}")]
+        [HttpGet("user/{userId:int}")]
         public async Task<IActionResult> GetAllAchievementsAsync([FromRoute] int userId)
         {
-            var result = await _achievementService.GetAllByUserIdAsync(userId);
+            var result = await achievementService.GetAllByUserIdAsync(userId);
             return Ok(result);
         }
 
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> CreateAchievementAsync([FromBody] AchievementCreateRequest request)
         {
-            var result = await _achievementService.CreateAsync(request);
+            var result = await achievementService.CreateAsync(request);
             return result ? Ok("Created") : BadRequest("Не удалось создать достижение");
         }
 
-        [HttpPut("update")]
+        [HttpPut]
         public async Task<IActionResult> UpdateAchievementAsync([FromBody] AchievementUpdateRequest request)
         {
-            var result = await _achievementService.UpdateAsync(request);
+            var result = await achievementService.UpdateAsync(request);
             return result ? Ok("Updated") : BadRequest($"Не найдено достижение с id={request.Id}!");
         }
 
-        [HttpDelete("delete/{id:int}")]
-        public async Task<IActionResult> DeleteAchievementAsync([FromRoute] int id)
+        [HttpDelete("{achievementId:int}")]
+        public async Task<IActionResult> DeleteAchievementAsync([FromRoute] int achievementId)
         {
-            var result = await _achievementService.DeleteAsync(id);
-            return result ? Ok("Deleted") : BadRequest($"Не найдено достижение с id={id}!");
+            var result = await achievementService.DeleteAsync(achievementId);
+            return result ? Ok("Deleted") : BadRequest($"Не найдено достижение с id={achievementId}!");
         }
     }
 }
