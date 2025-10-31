@@ -1,6 +1,5 @@
 using AutoMapper;
 using DataAccess.Models;
-using NutritionsApi.BLL.DTO;
 using NutritionsApi.BLL.DTO.RequestDto;
 
 namespace NutritionsApi.BLL.Profiles;

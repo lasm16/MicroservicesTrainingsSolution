@@ -6,7 +6,7 @@ namespace UsersApi.BLL.Services
 {
     public class NutritionsService(IHttpClientFactory httpClientFactory) : INutritionsService
     {
-        private const string Endpoint = "api/Nutritions/get-all";
+        private const string Endpoint = "api/v1/Nutritions/user";
 
         public async Task<List<NutritionDto>> GetAllNutritions(int userId)
         {
