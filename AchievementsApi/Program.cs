@@ -1,5 +1,6 @@
 using AchievementsApi.Abstractions;
 using AchievementsApi.BLL.Services;
+using AchievementsApi.Properties;
 using AchievementsApi.Repositores;
 using Commons.Config;
 using Commons.HealthChecks;
@@ -27,9 +28,12 @@ namespace AchievementsApi
                 x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
 
+            builder.Services.Configure<AppSettingsConfig>(
+                builder.Configuration.GetSection("AppSettingsConfig"));
             builder.Services.AddSingleton(provider =>
             {
-                var postgresConfig = PostgresHealthCheckConfig.LoadFromEmbeddedResource();
+                var config = provider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+                var postgresConfig = config.HealthCheckConfig.PostgresHealthCheckConfig;
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
                 var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();

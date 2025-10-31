@@ -7,6 +7,7 @@ using NutritionsApi.BLL.Factories;
 using NutritionsApi.BLL.Profiles;
 using NutritionsApi.BLL.Services;
 using NutritionsApi.Middleware;
+using NutritionsApi.Properties;
 using NutritionsApi.Repositories;
 
 namespace NutritionsApi
@@ -35,10 +36,12 @@ namespace NutritionsApi
                                        ?? throw new InvalidOperationException("Connection string not found.");
                 x.UseNpgsql(connectionString);
             });
-
+            builder.Services.Configure<AppSettingsConfig>(
+                builder.Configuration.GetSection("AppSettingsConfig"));
             builder.Services.AddSingleton(provider =>
             {
-                var postgresConfig = PostgresHealthCheckConfig.LoadFromEmbeddedResource();
+                var config = provider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+                var postgresConfig = config.HealthCheckConfig.PostgresHealthCheckConfig;
                 var connectionString = builder.Configuration.GetConnectionString("Npgsql")
                     ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
                 var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();

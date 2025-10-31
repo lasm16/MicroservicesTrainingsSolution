@@ -1,6 +1,5 @@
 ﻿using Commons.Config;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Options;
 using Npgsql;
 using System.Diagnostics;
 
@@ -11,6 +10,8 @@ namespace Commons.HealthChecks
         private readonly string _connectionString;
         private readonly PostgresHealthCheckConfig _config;
         private readonly Func<string, CancellationToken, Task<TimeSpan>> _connectionTester;
+        private TimeSpan Degrated => TimeSpan.FromMilliseconds(_config.DegradedThresholdMilliseconds);
+        private TimeSpan Unhealthy => TimeSpan.FromMilliseconds(_config.UnhealthyThresholdMilliseconds);
 
         public PostgresHealthCheck(string connectionString, PostgresHealthCheckConfig config)
             : this(connectionString, config, TestConnection)
@@ -33,13 +34,13 @@ namespace Commons.HealthChecks
         {
             var responseTime = await _connectionTester(_connectionString, cancellationToken);
 
-            var message = $"PostgreSQL check completed. Response time: {responseTime.TotalMilliseconds}ms";
+            var message = $"PostgreSQL check completed. Response time: {responseTime.TotalMilliseconds} ms";
 
-            if (responseTime < _config.DegradedThresholdMilliseconds)
+            if (responseTime < Degrated)
             {
                 return HealthCheckResult.Healthy(message);
             }
-            else if (responseTime < _config.UnhealthyThresholdMilliseconds)
+            else if (responseTime < Unhealthy)
             {
                 return HealthCheckResult.Degraded(message);
             }

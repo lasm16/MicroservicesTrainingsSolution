@@ -3,6 +3,7 @@ using Commons.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using TrainingsApi.BLL.Services;
+using TrainingsApi.Properties;
 using TrainingsApi.Repositories;
 
 namespace TrainingsApi
@@ -31,10 +32,12 @@ namespace TrainingsApi
                                        ?? throw new InvalidOperationException("Connection string not found.");
                 x.UseNpgsql(connectionString);
             });
-            
+            builder.Services.Configure<AppSettingsConfig>(
+                builder.Configuration.GetSection("AppSettingsConfig"));
             builder.Services.AddSingleton(provider =>
             {
-                var postgresConfig = PostgresHealthCheckConfig.LoadFromEmbeddedResource();
+                var config = provider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+                var postgresConfig = config.HealthCheckConfig.PostgresHealthCheckConfig;
                 var connectionString = builder.Configuration.GetConnectionString("Npgsql")
                     ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
                 var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();
