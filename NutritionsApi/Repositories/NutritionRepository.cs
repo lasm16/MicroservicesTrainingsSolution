@@ -39,9 +39,9 @@ namespace NutritionsApi.Repositories
             return affectedRows > 0;
         }
         
-        public async Task<bool> DeleteAsync(int modelId, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteAsync(int nutritionId, CancellationToken cancellationToken = default)
         {
-            var model = await context.Nutritions.FindAsync([modelId], cancellationToken);
+            var model = await context.Nutritions.FindAsync([nutritionId], cancellationToken);
             if (model is not { IsDeleted: false }) return false;
             model.IsDeleted = true;
             model.Updated = DateTime.UtcNow;

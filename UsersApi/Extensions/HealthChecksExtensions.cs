@@ -1,6 +1,4 @@
-﻿using Commons.HealthChecks;
-using UsersApi.Abstractions;
-using UsersApi.Factories;
+﻿using UsersApi.Abstractions;
 using UsersApi.Properties;
 namespace UsersApi.Extensions
 {
@@ -12,14 +10,14 @@ namespace UsersApi.Extensions
 
         public static IHealthChecksBuilder AddHealthChecks(this IHealthChecksBuilder builder, IHealthCheckFactory healthCheckFactory, AppSettingsConfig config)
         {
-            var trainingServiceUrl = config.TrainingsService.Address;
-            var achievementServiceUrl = config.AchievementsService.Address;
-            var nutritionServiceUrl = config.NutritionsService.Address;
+            var trainingServiceUrl = config.TrainingsService!.Address;
+            var achievementServiceUrl = config.AchievementsService!.Address;
+            var nutritionServiceUrl = config.NutritionsService!.Address;
 
             return builder
-                .AddCheck(RequestAchievementApi, healthCheckFactory.Create(achievementServiceUrl))
-                .AddCheck(RequestTrainingApi, healthCheckFactory.Create(trainingServiceUrl))
-                .AddCheck(RequestNutritiongApi, healthCheckFactory.Create(nutritionServiceUrl));
+                .AddCheck(RequestAchievementApi, healthCheckFactory.Create(achievementServiceUrl!))
+                .AddCheck(RequestTrainingApi, healthCheckFactory.Create(trainingServiceUrl!))
+                .AddCheck(RequestNutritiongApi, healthCheckFactory.Create(nutritionServiceUrl!));
         }
     }
 }

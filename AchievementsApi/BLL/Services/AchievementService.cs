@@ -22,12 +22,12 @@ namespace AchievementsApi.BLL.Services
             return AchievementMapper.MapEntityCollectionToDto(achievements);
         }
 
-        public async Task<AchievementDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<AchievementDto?> GetByIdAsync(int achievementId, CancellationToken cancellationToken)
         {
-            var achievement = await achievementRepository.GetByIdAsync(id, cancellationToken);
+            var achievement = await achievementRepository.GetByIdAsync(achievementId, cancellationToken);
             if (achievement == null)
             {
-                Console.WriteLine($"Не найдено достижение с id={id}!");
+                Console.WriteLine($"Не найдено достижение с id={achievementId}!");
                 return null;
             }
             return AchievementMapper.MapEntityToDto(achievement);
@@ -47,12 +47,12 @@ namespace AchievementsApi.BLL.Services
             return result;
         }
 
-        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
+        public async Task<bool> DeleteAsync(int achievementId, CancellationToken cancellationToken)
         {
-            var achievement = await achievementRepository.GetByIdAsync(id, cancellationToken);
+            var achievement = await achievementRepository.GetByIdAsync(achievementId, cancellationToken);
             if (achievement == null)
             {
-                Console.WriteLine($"Не найдено достижение с id={id}!");
+                Console.WriteLine($"Не найдено достижение с id={achievementId}!");
                 return false;
             }
             return await achievementRepository.DeleteAsync(achievement, cancellationToken);

@@ -6,10 +6,10 @@ namespace UsersApi.Repositories
 {
     public class UserRepository(DataAccess.AppContext context) : IUserRepository
     {
-        public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<User?> GetByIdAsync(int userId, CancellationToken cancellationToken = default)
         {
             return await context.Users
-                .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
+                .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, cancellationToken);
         }
 
         public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -33,9 +33,9 @@ namespace UsersApi.Repositories
             await context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteAsync(int userId, CancellationToken cancellationToken = default)
         {
-            var user = await context.Users.FindAsync([id], cancellationToken);
+            var user = await context.Users.FindAsync([userId], cancellationToken);
             if (user != null && !user.IsDeleted)
             {
                 user.IsDeleted = true;

@@ -14,8 +14,8 @@ namespace UsersApi.Factories
         public IHealthCheck Create(string url)
         {
             var appSettingsConfig = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
-            var requestHealthCheckConfig = appSettingsConfig.HealthCheckConfig.RequestHealthCheckConfig;
-            return new RequestHealthCheck(httpClientFactory, url, requestHealthCheckConfig);
+            var requestHealthCheckConfig = appSettingsConfig.HealthCheckConfig!.RequestHealthCheckConfig;
+            return new RequestHealthCheck(httpClientFactory, url, requestHealthCheckConfig!);
         }
     }
 }
