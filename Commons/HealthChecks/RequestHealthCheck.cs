@@ -4,10 +4,10 @@ using System.Diagnostics;
 
 namespace Commons.HealthChecks
 {
-    public class RequestHealthCheck(RequestHealthCheckConfig requestHealthCheck, string requestUri) : IHealthCheck
+    public class RequestHealthCheck(IHttpClientFactory httpClientFactory, string requestUri, RequestHealthCheckConfig requestHealthCheck) : IHealthCheck
     {
         public const string RequestTimeCheckHealthy = "Request time check completed. Response time: ";
-        public const string RequestTimeCheckFailed = "Request time check failed";
+        public const string RequestTimeCheckFailed = "Request time check failed. ";
 
         private readonly TimeSpan Degrated = TimeSpan.FromMilliseconds(requestHealthCheck.DegradedThresholdMilliseconds);
         private readonly TimeSpan Unhealthy = TimeSpan.FromMilliseconds(requestHealthCheck.UnhealthyThresholdMilliseconds);
@@ -18,26 +18,26 @@ namespace Commons.HealthChecks
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                using var client = new HttpClient();
+                using var client = httpClientFactory.CreateClient();
                 await client.GetAsync(requestUri + "/health", cancellationToken);
                 stopwatch.Stop();
                 var responseTime = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
-                var message = RequestTimeCheckHealthy + $"{responseTime.TotalMilliseconds}  ms";
-
+                var messageSuccess = RequestTimeCheckHealthy + $"{responseTime.TotalMilliseconds}  ms";
                 if (responseTime < Degrated)
                 {
-                    return HealthCheckResult.Healthy(message);
+                    return HealthCheckResult.Healthy(messageSuccess);
                 }
                 if (responseTime < Unhealthy)
                 {
-                    return HealthCheckResult.Degraded(message);
+                    return HealthCheckResult.Degraded(messageSuccess);
                 }
-                return HealthCheckResult.Unhealthy(message);
+                var messageFail = RequestTimeCheckFailed + $"Response time: {responseTime.TotalMilliseconds}  ms";
+                return HealthCheckResult.Unhealthy(messageFail);
             }
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                Console.WriteLine(RequestTimeCheckFailed + ": " + ex.Message);
+                Console.WriteLine(RequestTimeCheckFailed + ex.Message);
                 return HealthCheckResult.Unhealthy(RequestTimeCheckFailed);
             }
         }

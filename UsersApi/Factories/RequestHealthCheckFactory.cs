@@ -6,14 +6,16 @@ using UsersApi.Properties;
 
 namespace UsersApi.Factories
 {
-    public class RequestHealthCheckFactory(IServiceProvider serviceProvider) : IHealthCheckFactory
+    public class RequestHealthCheckFactory(
+        IServiceProvider serviceProvider, 
+        IHttpClientFactory httpClientFactory) : IHealthCheckFactory
     {
 
         public IHealthCheck Create(string url)
         {
             var appSettingsConfig = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
             var requestHealthCheckConfig = appSettingsConfig.HealthCheckConfig.RequestHealthCheckConfig;
-            return new RequestHealthCheck(requestHealthCheckConfig, url);
+            return new RequestHealthCheck(httpClientFactory, url, requestHealthCheckConfig);
         }
     }
 }
