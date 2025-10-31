@@ -24,12 +24,9 @@ namespace UsersApi
             builder.Services.AddScoped<UserMapper>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddSingleton<IDbListener, DbNotificationListener>();
             builder.Services.AddScoped<IAchievementsService, BLL.Services.AchievementsService>();
             builder.Services.AddScoped<INutritionsService, BLL.Services.NutritionsService>();
             builder.Services.AddScoped<ITrainingsService, BLL.Services.TrainingsService>();
-            builder.Services.AddHostedService(provider =>
-                (DbNotificationListener)provider.GetRequiredService<IDbListener>());
             builder.Services.Configure<AppSettingsConfig>(
                 builder.Configuration.GetSection("AppSettingsConfig"));
             builder.Services.AddMemoryCache();

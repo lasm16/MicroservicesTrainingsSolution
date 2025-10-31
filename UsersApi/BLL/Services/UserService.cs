@@ -18,7 +18,6 @@ namespace UsersApi.BLL.Services
 
         public UserService(
             IUserRepository userRepository,
-            IDbListener dbListener,
             IAchievementsService achievementService,
             INutritionsService nutritionsService,
             ITrainingsService trainingsService,
@@ -31,7 +30,6 @@ namespace UsersApi.BLL.Services
             _trainingsService = trainingsService;
             _memoryCache = memoryCache;
             _settingsConfig = settingsConfig.Value;
-            dbListener.OnNotificationReceived += OnUserDeleted;
         }
 
         public async Task<UserResponse?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
@@ -103,12 +101,7 @@ namespace UsersApi.BLL.Services
                 return false;
             }
             return await _userRepository.DeleteAsync(id, cancellationToken);
-        }
-
-        private void OnUserDeleted(object? sender, string e)
-        {
-            throw new NotImplementedException();
-        }
+            }
 
         private async Task<List<AchievementDto>> GetAchievementList(int id)
         {
