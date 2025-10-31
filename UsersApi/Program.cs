@@ -7,7 +7,6 @@ using UsersApi.BLL.Mapper;
 using UsersApi.BLL.Services;
 using UsersApi.Extensions;
 using UsersApi.Factories;
-using UsersApi.Listeners;
 using UsersApi.Properties;
 using UsersApi.Repositories;
 
