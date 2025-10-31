@@ -1,14 +1,5 @@
-using Commons.Config;
 using Commons.HealthChecks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using UsersApi.Abstractions;
-using UsersApi.BLL.Mapper;
-using UsersApi.BLL.Services;
 using UsersApi.Extensions;
-using UsersApi.Factories;
-using UsersApi.Properties;
-using UsersApi.Repositories;
 
 namespace UsersApi
 {
@@ -18,56 +9,7 @@ namespace UsersApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
-            builder.Services.AddOpenApi();
-            builder.Services.AddScoped<UserMapper>();
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IAchievementsService, BLL.Services.AchievementsService>();
-            builder.Services.AddScoped<INutritionsService, BLL.Services.NutritionsService>();
-            builder.Services.AddScoped<ITrainingsService, BLL.Services.TrainingsService>();
-            builder.Services.Configure<AppSettingsConfig>(
-                builder.Configuration.GetSection("AppSettingsConfig"));
-            builder.Services.AddMemoryCache();
-            builder.Services.AddHttpClient(HttpClientConfig.AchievementsClient, (serviceProvider, client) =>
-            {
-                var config = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
-                client.BaseAddress = new Uri(config.AchievementsService!.Address!);
-                client.Timeout = TimeSpan.FromMilliseconds(config.AchievementsService.TimeoutMilliseconds);
-            });
-            builder.Services.AddHttpClient(HttpClientConfig.NutritionsClient, (serviceProvider, client) =>
-            {
-                var config = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
-                client.BaseAddress = new Uri(config.NutritionsService!.Address!);
-                client.Timeout = TimeSpan.FromMilliseconds(config.NutritionsService.TimeoutMilliseconds);
-            });
-            builder.Services.AddHttpClient(HttpClientConfig.TrainingsClient, (serviceProvider, client) =>
-            {
-                var config = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
-                client.BaseAddress = new Uri(config.TrainingsService!.Address!);
-                client.Timeout = TimeSpan.FromMilliseconds(config.TrainingsService.TimeoutMilliseconds);
-            });
-
-            builder.Services.AddDbContext<DataAccess.AppContext>(options =>
-                    options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql")));
-
-            builder.Services.AddSingleton(provider =>
-            {
-                var config = provider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
-                var postgresConfig = config.HealthCheckConfig.PostgresHealthCheckConfig;
-                var connectionString = builder.Configuration.GetConnectionString("Npgsql")
-                    ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
-                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();
-                return new PostgresHealthCheck(connectionString, postgresConfig);
-            });
-            builder.Services.AddSingleton<IHealthCheckFactory, RequestHealthCheckFactory>();
-            builder.Services.AddHealthChecks().AddCommonHealthChecks();
-
-            var factory = builder.Services.BuildServiceProvider().GetRequiredService<IHealthCheckFactory>();
-            var config = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<AppSettingsConfig>>().Value;
-            var traingUrl = config.TrainingsService.Address;
-            var achievementUrl = config.AchievementsService.Address;
-            builder.Services.AddHealthChecks().AddHealthChecks(factory, config);
+            builder.Services.AddDependencies(builder.Configuration);
 
             var app = builder.Build();
 
@@ -81,14 +23,9 @@ namespace UsersApi
             }
 
             app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("UsersApi"));
-
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.Run();
         }
     }

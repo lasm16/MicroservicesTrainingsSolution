@@ -13,6 +13,6 @@ namespace NutritionsApi.Abstractions
         internal Task<bool> UpdateAsync(
             UpdateNutritionRequestDto dto, 
             CancellationToken cancellationToken = default);
-        internal Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+        internal Task<bool> DeleteAsync(int nutritionId, CancellationToken cancellationToken = default);
     }
 }
