@@ -1,11 +1,5 @@
-using AchievementsApi.Abstractions;
-using AchievementsApi.BLL.Services;
-using AchievementsApi.Properties;
-using AchievementsApi.Repositores;
-using Commons.Config;
+using AchievementsApi.Extensions;
 using Commons.HealthChecks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace AchievementsApi
 {
@@ -15,33 +9,7 @@ namespace AchievementsApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
-            builder.Services.AddOpenApi();
-            builder.Services.AddScoped<IAchievementRepository, AchievementRepository>();
-            builder.Services.AddScoped<IAchievementService, AchievementService>();
-            builder.Services.AddSingleton<INotificationService, NotificationService>();
-            builder.Services.AddHostedService<NotificationProcessingService>();
-            builder.Services.AddDbContext<DataAccess.AppContext>(x =>
-            {
-                var configurationString = builder.Configuration.GetConnectionString("DefaultConnection");
-                x.UseNpgsql(configurationString);
-                x.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            });
-
-            builder.Services.Configure<AppSettingsConfig>(
-                builder.Configuration.GetSection("AppSettingsConfig"));
-            builder.Services.AddSingleton(provider =>
-            {
-                var config = provider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
-                var postgresConfig = config.HealthCheckConfig.PostgresHealthCheckConfig;
-                var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();
-                return new PostgresHealthCheck(connectionString, postgresConfig);
-            });
-
-            builder.Services.AddHealthChecks()
-                            .AddCommonHealthChecks();
+            builder.Services.AddDependencies(builder.Configuration);
 
             var app = builder.Build();
 
@@ -55,19 +23,10 @@ namespace AchievementsApi
             }
 
             app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("AchievmentsApi"));
-
             app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
             app.Run();
-        }
-
-        private static IConfigurationRoot GetConfiguration()
-        {
-            return new ConfigurationBuilder()
-                                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                                .AddJsonFile("appsettings.json")
-                                .Build();
         }
     }
 }
