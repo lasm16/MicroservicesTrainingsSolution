@@ -1,8 +1,13 @@
+using Commons.Config;
+using Commons.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using UsersApi.Abstractions;
 using UsersApi.BLL.Mapper;
 using UsersApi.BLL.Services;
+using UsersApi.Extensions;
+using UsersApi.Factories;
+using UsersApi.Listeners;
 using UsersApi.Properties;
 using UsersApi.Repositories;
 
@@ -25,7 +30,6 @@ namespace UsersApi
             builder.Services.Configure<AppSettingsConfig>(
                 builder.Configuration.GetSection("AppSettingsConfig"));
             builder.Services.AddMemoryCache();
-
             builder.Services.AddHttpClient(HttpClientConfig.AchievementsClient, (serviceProvider, client) =>
             {
                 var config = serviceProvider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
@@ -46,7 +50,25 @@ namespace UsersApi
             });
 
             builder.Services.AddDbContext<DataAccess.AppContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql")));
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("Npgsql")));
+
+            builder.Services.AddSingleton(provider =>
+            {
+                var config = provider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+                var postgresConfig = config.HealthCheckConfig.PostgresHealthCheckConfig;
+                var connectionString = builder.Configuration.GetConnectionString("Npgsql")
+                    ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
+                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();
+                return new PostgresHealthCheck(connectionString, postgresConfig);
+            });
+            builder.Services.AddSingleton<IHealthCheckFactory, RequestHealthCheckFactory>();
+            builder.Services.AddHealthChecks().AddCommonHealthChecks();
+
+            var factory = builder.Services.BuildServiceProvider().GetRequiredService<IHealthCheckFactory>();
+            var config = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+            var traingUrl = config.TrainingsService.Address;
+            var achievementUrl = config.AchievementsService.Address;
+            builder.Services.AddHealthChecks().AddHealthChecks(factory, config);
 
             var app = builder.Build();
 
@@ -58,6 +80,8 @@ namespace UsersApi
                     options.DocumentPath = "openapi/v1.json";
                 });
             }
+
+            app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("UsersApi"));
 
             app.UseHttpsRedirection();
 

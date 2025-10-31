@@ -1,4 +1,6 @@
-﻿namespace UsersApi.Properties
+﻿using Commons.Config;
+
+namespace UsersApi.Properties
 {
     public class AppSettingsConfig
     {
@@ -6,6 +8,7 @@
         public NutritionsService? NutritionsService { get; set; }
         public TrainingsService? TrainingsService { get; set; }
         public CacheSettings? CacheSettings { get; set; }
+        public HealthCheckConfig? HealthCheckConfig { get; set; }
     }
 
     public class AchievementsService

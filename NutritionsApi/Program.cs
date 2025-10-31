@@ -1,11 +1,14 @@
+using Commons.Config;
+using Commons.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using NutritionsApi.Abstractions;
-using NutritionsApi.BLL.Services;
-using NutritionsApi.Middleware;
-using NutritionsApi.Repositories;
-using AutoMapper;
 using NutritionsApi.BLL.Factories;
 using NutritionsApi.BLL.Profiles;
+using NutritionsApi.BLL.Services;
+using NutritionsApi.Middleware;
+using NutritionsApi.Properties;
+using NutritionsApi.Repositories;
 
 namespace NutritionsApi
 {
@@ -33,6 +36,21 @@ namespace NutritionsApi
                                        ?? throw new InvalidOperationException("Connection string not found.");
                 x.UseNpgsql(connectionString);
             });
+            builder.Services.Configure<AppSettingsConfig>(
+                builder.Configuration.GetSection("AppSettingsConfig"));
+            builder.Services.AddSingleton(provider =>
+            {
+                var config = provider.GetRequiredService<IOptions<AppSettingsConfig>>().Value;
+                var postgresConfig = config.HealthCheckConfig.PostgresHealthCheckConfig;
+                var connectionString = builder.Configuration.GetConnectionString("Npgsql")
+                    ?? throw new InvalidOperationException("Connection string 'Npgsql' not found.");
+                var options = provider.GetRequiredService<IOptions<PostgresHealthCheckConfig>>();
+                return new PostgresHealthCheck(connectionString, postgresConfig);
+            });
+
+            builder.Services.AddHealthChecks()
+                            .AddCommonHealthChecks();
+
 
             var app = builder.Build();
             
@@ -44,7 +62,9 @@ namespace NutritionsApi
                     options.DocumentPath = "openapi/v1.json";
                 });
             }
-            
+
+            app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("NutritionsApi"));
+
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseHttpsRedirection();
             app.UseAuthorization();
