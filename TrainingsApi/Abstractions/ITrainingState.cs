@@ -1,4 +1,6 @@
-﻿namespace TrainingsApi.BLL.States
+﻿using TrainingsApi.BLL.States;
+
+namespace TrainingsApi.Abstractions
 {
     public interface ITrainingState
     {

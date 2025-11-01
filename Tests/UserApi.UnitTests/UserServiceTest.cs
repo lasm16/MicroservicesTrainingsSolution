@@ -1,4 +1,5 @@
-﻿using DataAccess.Models;
+﻿using DataAccess.Enums;
+using DataAccess.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -304,7 +305,7 @@ namespace Tests.UserApi.UnitTests
                     Description = "123",
                     DurationInMinutes = 3,
                     Id = 4,
-                    IsCompleted = true,
+                    Status = (int)StatusType.InProgress,
                 }
             ];
         }

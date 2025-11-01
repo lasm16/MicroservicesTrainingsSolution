@@ -1,23 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading;
+using TrainingsApi.Abstractions;
 using TrainingsApi.BLL.Dtos;
-using TrainingsApi.BLL.Services;
 
 namespace TrainingsApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class TrainingsController(ITrainingService trainingService) : ControllerBase
     {
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetTrainingAsync([FromRoute] int id)
+        [HttpGet("{trainingId:int}")]
+        public async Task<IActionResult> GetTrainingAsync([FromRoute] int trainingId)
         {
-            var result = await trainingService.GetByIdAsync(id);
+            var result = await trainingService.GetByIdAsync(trainingId);
             return result is null ? NotFound() : Ok(result);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllTrainingsAsync(int id)
+        [HttpGet("user/{userId:int}")]
+        public async Task<IActionResult> GetAllTrainingsAsync(int userId)
         {
             if (userId <= 0) return BadRequest("userId is required");
             var result = await trainingService.GetAllAsync(userId);
@@ -31,30 +30,24 @@ namespace TrainingsApi.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateTrainingAsync([FromRoute] TrainingUpdateDto dto)
+        [HttpPut]
+        public async Task<IActionResult> UpdateTrainingAsync([FromBody] TrainingUpdateDto dto)
         {
             await trainingService.UpdateAsync(dto);
             return NoContent();
         }
-        [HttpPatch("{id:int}/status")]
-        public async Task<IActionResult> UpdateTrainingStatus([FromRoute] TrainingStatusUpdateDto dto)
+
+        [HttpPatch("status")]
+        public async Task<IActionResult> UpdateTrainingStatus([FromBody] TrainingStatusUpdateDto dto)
         {
             await trainingService.UpdateStatusAsync(dto);
             return NoContent();
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteTrainingAsync([FromRoute] int id)
+        [HttpDelete("{trainingId:int}")]
+        public async Task<IActionResult> DeleteTrainingAsync([FromRoute] int trainingId)
         {
-            var dto = new TrainingDeleteDto
-            {
-                Id = id,
-                IsDeleted = true,
-                Updated = DateTime.UtcNow
-            };
-
-            await trainingService.DeleteAsync(dto);
+            await trainingService.DeleteAsync(trainingId);
             return NoContent();
         }
     }

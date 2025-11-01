@@ -1,26 +1,21 @@
-﻿using DataAccess.Models;
+﻿using DataAccess.Enums;
+using TrainingsApi.Abstractions;
 
 namespace TrainingsApi.BLL.States
 {
-    public class TrainingContext
+    public class TrainingContext(StatusType status)
     {
-        public Training Training { get; set; }
-        public ITrainingState State { get; set; }
+        public StatusType Status { get; set; }
+        public ITrainingState State { get; set; } = MapStatusToState(status);
 
-        public TrainingContext(Training training)
-        {
-            Training = training;
-            State = MapStatusToState(training.Status);
-        }
-        private ITrainingState MapStatusToState(string status)
+        private static ITrainingState MapStatusToState(StatusType status)
         {
             return status switch
             {
-                "Planned" => new TrainingPlannedState(),
-                "InProgress" => new TrainingInProgressState(),
-                "Completed" => new TrainingCompletedState(),
-                "Cancelled" => new TrainingCancelledState(),
-                null => new TrainingPlannedState(),
+                StatusType.Planned => new TrainingPlannedState(),
+                StatusType.InProgress => new TrainingInProgressState(),
+                StatusType.Completed => new TrainingCompletedState(),
+                StatusType.Cancelled => new TrainingCancelledState(),
                 _ => throw new ArgumentException($"Unknown status: {status}")
             };
         }
@@ -28,19 +23,19 @@ namespace TrainingsApi.BLL.States
         public void Start()
         {
             State.Start(this);
-            Training.Status = "InProgress";
+            Status = StatusType.InProgress;
         }
 
         public void Complete()
         {
             State.Complete(this);
-            Training.Status = "Completed";
+            Status = StatusType.Completed;
         }
 
         public void Cancel()
         {
             State.Cancel(this);
-            Training.Status = "Cancelled";
+            Status = StatusType.Cancelled;
         }
     }
 }

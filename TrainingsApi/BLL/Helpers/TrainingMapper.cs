@@ -5,50 +5,38 @@ namespace TrainingsApi.BLL.Helpers
 {
     public static class TrainingMapper
     {
-        public static TrainingDto ToDto(Training entity) => new()
+        public static TrainingDto ToDto(Training training) => new()
         {
-            UserId = entity.UserId,
-            Description = entity.Description,
-            Date = entity.Date,
-            DurationInMinutes = entity.DurationInMinutes,
-            Status = entity.Status
+            UserId = training.UserId,
+            Description = training.Description,
+            Date = training.Date,
+            DurationInMinutes = training.DurationInMinutes,
+            Status = (int)training.Status
         };
 
         public static List<TrainingDto> ToDtoList(IEnumerable<Training> trainings)
         {
-            return trainings.Select(ToDto).ToList();
+            return [.. trainings.Select(ToDto)];
         }
 
-        public static Training FromCreateDto(TrainingCreateDto dto) => new()
+        public static Training ToModel(TrainingCreateDto dto) => new()
         {
             UserId = dto.UserId,
             Description = dto.Description,
             Date = dto.Date,
             DurationInMinutes = dto.DurationInMinutes,
-            Status = dto.Status ?? "Planned",
-            Created = DateTime.UtcNow,
-            Updated = DateTime.UtcNow,
-            IsDeleted = false
+            Status = (DataAccess.Enums.StatusType)dto.Status,
         };
 
-        public static void UpdateEntity(Training entity, TrainingUpdateDto dto)
+        public static Training ToModel(TrainingUpdateDto dto) => new()
         {
-            entity.Description = dto.Description;
-            entity.Date = dto.Date;
-            entity.DurationInMinutes = dto.DurationInMinutes;
-            entity.Updated = DateTime.UtcNow;
-        }
-
-        public static void UpdateStatus(Training entity, TrainingStatusUpdateDto dto)
-        {
-            entity.Status = dto.Status;
-            entity.Updated = DateTime.UtcNow;
-        }
-
-        public static void MarkDeleted(Training entity, TrainingDeleteDto dto)
-        {
-            entity.IsDeleted = true;
-            entity.Updated = DateTime.UtcNow;
-        }
+            Id = dto.Id,
+            UserId = dto.UserId,
+            Description = dto.Description,
+            Date = dto.Date,
+            DurationInMinutes = dto.DurationInMinutes,
+            Status = (DataAccess.Enums.StatusType)dto.Status,
+            IsDeleted = dto.IsDeleted,
+        };
     }
 }

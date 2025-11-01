@@ -1,4 +1,6 @@
-﻿namespace TrainingsApi.BLL.States
+﻿using TrainingsApi.Abstractions;
+
+namespace TrainingsApi.BLL.States
 {
     public class TrainingCancelledState: ITrainingState
     {
