@@ -304,7 +304,7 @@ namespace Tests.UserApi.UnitTests
                     Description = "123",
                     DurationInMinutes = 3,
                     Id = 4,
-                    IsCompleted = true,
+                    Status = 2,
                 }
             ];
         }

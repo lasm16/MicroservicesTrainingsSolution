@@ -1,50 +1,42 @@
 ﻿using DataAccess.Models;
+using TrainingsApi.BLL.DTO;
 
 namespace TrainingsApi.BLL.Helpers
 {
     public static class TrainingMapper
     {
-        public static TrainingDto ToDto(Training training)
+        public static TrainingDto ToDto(Training training) => new()
         {
-            return new TrainingDto
-            {
-                Id = training.Id,
-                UserId = training.UserId,
-                Description = training.Description,
-                Date = training.Date,
-                DurationInMinutes = training.DurationInMinutes,
-                IsCompleted = training.IsCompleted
-            };
-        }
+            UserId = training.UserId,
+            Description = training.Description,
+            Date = training.Date,
+            DurationInMinutes = training.DurationInMinutes,
+            Status = (int)training.Status
+        };
 
         public static List<TrainingDto> ToDtoList(IEnumerable<Training> trainings)
         {
-            return trainings.Select(ToDto).ToList();
+            return [.. trainings.Select(ToDto)];
         }
 
-        public static Training ToEntity(TrainingDto dto)
+        public static Training ToModel(TrainingCreateDto dto) => new()
         {
-            return new Training
-            {
-                Id = dto.Id,
-                UserId = dto.UserId,
-                Description = dto.Description,
-                Date = dto.Date,
-                DurationInMinutes = dto.DurationInMinutes,
-                IsCompleted = dto.IsCompleted,
-                Created = DateTime.UtcNow,
-                Updated = DateTime.UtcNow,
-                IsDeleted = false
-            };
-        }
+            UserId = dto.UserId,
+            Description = dto.Description,
+            Date = dto.Date,
+            DurationInMinutes = dto.DurationInMinutes,
+            Status = (DataAccess.Enums.StatusType)dto.Status,
+        };
 
-        public static void UpdateEntity(Training training, TrainingDto dto)
+        public static Training ToModel(TrainingUpdateDto dto) => new()
         {
-            training.Description = dto.Description;
-            training.Date = dto.Date;
-            training.DurationInMinutes = dto.DurationInMinutes;
-            training.IsCompleted = dto.IsCompleted;
-            training.Updated = DateTime.UtcNow;
-        }
+            Id = dto.Id,
+            UserId = dto.UserId,
+            Description = dto.Description,
+            Date = dto.Date,
+            DurationInMinutes = dto.DurationInMinutes,
+            Status = (DataAccess.Enums.StatusType)dto.Status,
+            IsDeleted = dto.IsDeleted,
+        };
     }
 }
