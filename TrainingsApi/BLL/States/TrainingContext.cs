@@ -1,5 +1,4 @@
 ﻿using DataAccess.Enums;
-using TrainingsApi.Abstractions;
 
 namespace TrainingsApi.BLL.States
 {

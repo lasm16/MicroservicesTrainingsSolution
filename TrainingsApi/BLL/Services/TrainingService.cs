@@ -17,9 +17,9 @@ namespace TrainingsApi.BLL.Services
             return TrainingMapper.ToDtoList(trainings);
         }
 
-        public async Task<TrainingDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<TrainingDto?> GetByIdAsync(int trainingId, CancellationToken cancellationToken = default)
         {
-            var training = await repository.GetByIdAsync(id, cancellationToken);
+            var training = await repository.GetByIdAsync(trainingId, cancellationToken);
             return training is null ? null : TrainingMapper.ToDto(training);
         }
 
@@ -45,8 +45,6 @@ namespace TrainingsApi.BLL.Services
             var training = await repository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new ArgumentException($"Training with id {dto.Id} not found");
             var context = new TrainingContext(training.Status);
-
-            //var status = training.Status;
 
             switch (dto.Status)
             {
