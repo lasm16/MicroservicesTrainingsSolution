@@ -29,5 +29,12 @@ namespace NutritionsApi.Extensions
 
             services.AddHealthChecks().AddCommonHealthChecks();
         }
+
+        public static void AddJsonConfigurations(this ConfigurationManager configuration, string environmentName)
+        {
+            configuration
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true);
+        }
     }
 }
