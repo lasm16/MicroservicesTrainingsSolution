@@ -15,8 +15,9 @@
 
   <ItemGroup>
 	  
+    <ProjectReference Include="..\Commons\Commons.csproj" />
+	  
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-    <ProjectReference Include="..\UsersApi\UsersApi.csproj" />
   </ItemGroup>
 
 </Project>

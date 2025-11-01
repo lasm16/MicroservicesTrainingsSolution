@@ -6,14 +6,14 @@ namespace UsersApi.BLL.Services
 {
     public class TrainingsService(IHttpClientFactory httpClientFactory) : ITrainingsService
     {
-        private const string Endpoint = "api/Trainings";
+        private const string Endpoint = "api/v1/Trainings/user";
 
         public async Task<List<TrainingDto>> GetAllTrainings(int userId)
         {
             try
             {
                 using var client = httpClientFactory.CreateClient(HttpClientConfig.TrainingsClient);
-                var response = await client.GetAsync($"{Endpoint}?id={userId}");
+                var response = await client.GetAsync($"{Endpoint}/{userId}");
                 response.EnsureSuccessStatusCode();
                 var list = await response.Content.ReadFromJsonAsync<List<TrainingDto>>();
                 return list ?? [];
