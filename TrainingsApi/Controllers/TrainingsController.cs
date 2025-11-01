@@ -36,6 +36,12 @@ namespace TrainingsApi.Controllers
             await trainingService.UpdateAsync(dto);
             return NoContent();
         }
+        [HttpPatch("{id:int}/status")]
+        public async Task<IActionResult> UpdateTrainingStatus([FromRoute] TrainingStatusUpdateDto dto)
+        {
+            await trainingService.UpdateStatusAsync(dto);
+            return NoContent();
+        }
 
         [HttpPatch("status")]
         public async Task<IActionResult> UpdateTrainingStatus([FromBody] TrainingStatusUpdateDto dto)

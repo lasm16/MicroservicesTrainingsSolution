@@ -36,8 +36,6 @@ namespace TrainingsApi.Repositories
 
         public async Task<bool> DeleteAsync(Training training, CancellationToken cancellationToken = default)
         {
-            training.IsDeleted = true;
-            training.Updated = DateTime.UtcNow;
             context.Trainings.Update(training);
             var result = await context.SaveChangesAsync(cancellationToken);
             return result > 0;

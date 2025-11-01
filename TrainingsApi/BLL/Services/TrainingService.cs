@@ -17,7 +17,7 @@ namespace TrainingsApi.BLL.Services
             return TrainingMapper.ToDtoList(trainings);
         }
 
-        public async Task<TrainingDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<TrainingDto> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var training = await repository.GetByIdAsync(id, cancellationToken);
             return training is null ? null : TrainingMapper.ToDto(training);
