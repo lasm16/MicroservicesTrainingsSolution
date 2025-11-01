@@ -35,6 +35,13 @@ namespace UsersApi.Extensions
             
         }
 
+        public static void AddJsonConfigurations(this ConfigurationManager configuration, string environmentName)
+        {
+            configuration
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: true);
+        }
+
         private static void RegisterHttpClients(IServiceCollection services)
         {
             services.AddHttpClient(HttpClientConfig.AchievementsClient, (serviceProvider, client) =>

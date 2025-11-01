@@ -10,6 +10,7 @@ namespace TrainingsApi
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDependencies(builder.Configuration);
+            builder.Configuration.AddJsonConfigurations(builder.Environment.EnvironmentName);
 
             var app = builder.Build();
 
