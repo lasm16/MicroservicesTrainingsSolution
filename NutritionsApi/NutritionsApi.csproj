@@ -12,11 +12,6 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
-	  <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="NSwag.AspNetCore" Version="14.6.0">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
@@ -25,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Commons\Commons.csproj" />
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-    <ProjectReference Include="..\UsersApi\UsersApi.csproj" />
   </ItemGroup>
 
 </Project>
