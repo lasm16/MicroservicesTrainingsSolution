@@ -1,5 +1,4 @@
-﻿using NutritionsApi.BLL.DTO;
-using NutritionsApi.BLL.DTO.RequestDto;
+﻿using NutritionsApi.BLL.DTO.RequestDto;
 using NutritionsApi.BLL.DTO.ResponseDto;
 
 namespace NutritionsApi.Abstractions
@@ -14,6 +13,6 @@ namespace NutritionsApi.Abstractions
         internal Task<bool> UpdateAsync(
             UpdateNutritionRequestDto dto, 
             CancellationToken cancellationToken = default);
-        internal Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+        internal Task<bool> DeleteAsync(int nutritionId, CancellationToken cancellationToken = default);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using DataAccess.Models;
-using NutritionsApi.BLL.DTO;
 
 namespace NutritionsApi.Abstractions
 {

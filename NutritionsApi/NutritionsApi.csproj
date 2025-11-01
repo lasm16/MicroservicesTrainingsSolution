@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>39fe79f6-898d-404e-9645-fcc6c1703f3b</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,18 +12,14 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="NSwag.AspNetCore" Version="14.6.0">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Commons\Commons.csproj" />
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-    <ProjectReference Include="..\UsersApi\UsersApi.csproj" />
   </ItemGroup>
 
 </Project>

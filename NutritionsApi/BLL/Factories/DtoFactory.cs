@@ -1,5 +1,4 @@
 using NutritionsApi.Abstractions;
-using NutritionsApi.BLL.DTO;
 using NutritionsApi.BLL.DTO.RequestDto;
 using NutritionsApi.BLL.DTO.ResponseDto;
 

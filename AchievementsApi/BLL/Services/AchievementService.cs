@@ -10,13 +10,11 @@ namespace AchievementsApi.BLL.Services
         IAchievementRepository achievementRepository,
         INotificationService notificationService) : IAchievementService
     {
-        private readonly IAchievementRepository _achievementRepository = achievementRepository;
-        private readonly INotificationService _notificationService = notificationService;
         private IAchievementRewardCalculator? _rewardCalculator;
 
         public async Task<List<AchievementDto>> GetAllByUserIdAsync(int userId, CancellationToken cancellationToken)
         {
-            var achievements = await _achievementRepository.GetAllAsync(userId, cancellationToken);
+            var achievements = await achievementRepository.GetAllAsync(userId, cancellationToken);
             if (achievements.Count == 0)
             {
                 return [];
@@ -24,12 +22,12 @@ namespace AchievementsApi.BLL.Services
             return AchievementMapper.MapEntityCollectionToDto(achievements);
         }
 
-        public async Task<AchievementDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<AchievementDto?> GetByIdAsync(int achievementId, CancellationToken cancellationToken)
         {
-            var achievement = await _achievementRepository.GetByIdAsync(id, cancellationToken);
+            var achievement = await achievementRepository.GetByIdAsync(achievementId, cancellationToken);
             if (achievement == null)
             {
-                Console.WriteLine($"Не найдено достижение с id={id}!");
+                Console.WriteLine($"Не найдено достижение с id={achievementId}!");
                 return null;
             }
             return AchievementMapper.MapEntityToDto(achievement);
@@ -40,30 +38,30 @@ namespace AchievementsApi.BLL.Services
             var achievementDto = AchievementMapper.MapRequestToDto((AchievementCreateRequest)request);
             CalculateReward(achievementDto);
             var achievement = AchievementMapper.MapDtoToEntity(achievementDto);
-            var result = await _achievementRepository.AddAsync(achievement, cancellationToken);
+            var result = await achievementRepository.AddAsync(achievement, cancellationToken);
             if (result == true)
             {
                 var message = $"Получено новое достижение с наградой: {achievement.Reward}";
-                _notificationService.AddNotification(message);
+                notificationService.AddNotification(message);
             }
             return result;
         }
 
-        public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
+        public async Task<bool> DeleteAsync(int achievementId, CancellationToken cancellationToken)
         {
-            var achievement = await _achievementRepository.GetByIdAsync(id, cancellationToken);
+            var achievement = await achievementRepository.GetByIdAsync(achievementId, cancellationToken);
             if (achievement == null)
             {
-                Console.WriteLine($"Не найдено достижение с id={id}!");
+                Console.WriteLine($"Не найдено достижение с id={achievementId}!");
                 return false;
             }
-            return await _achievementRepository.DeleteAsync(achievement, cancellationToken);
+            return await achievementRepository.DeleteAsync(achievement, cancellationToken);
         }
 
         public async Task<bool> UpdateAsync(AchievementRequest request, CancellationToken cancellationToken)
         {
             var achievementFromRequestDto = AchievementMapper.MapRequestToDto((AchievementUpdateRequest)request);
-            var achievementFromRepository = await _achievementRepository.GetByIdAsync(achievementFromRequestDto.Id, cancellationToken);
+            var achievementFromRepository = await achievementRepository.GetByIdAsync(achievementFromRequestDto.Id, cancellationToken);
             if (achievementFromRepository == null)
             {
                 Console.WriteLine($"Не найдено достижение с id={achievementFromRequestDto.Id}!");
@@ -71,7 +69,7 @@ namespace AchievementsApi.BLL.Services
             }
             CalculateReward(achievementFromRequestDto);
             var achievement = AchievementMapper.MapDtoToEntity(achievementFromRequestDto);
-            return await _achievementRepository.UpdateAsync(achievement, cancellationToken);
+            return await achievementRepository.UpdateAsync(achievement, cancellationToken);
         }
 
         private void CalculateReward(AchievementDto achievement)

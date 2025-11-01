@@ -1,6 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TrainingsApi.BLL.Services;
-using TrainingsApi.Repositories;
+using Commons.HealthChecks;
+using TrainingsApi.Extensions;
 
 namespace TrainingsApi
 {
@@ -10,22 +9,7 @@ namespace TrainingsApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
-
-            builder.Services.AddOpenApiDocument(config =>
-            {
-                config.Title = "Trainings API";
-                config.Version = "v1";
-                config.Description = "API для управления тренировками и пользователями";
-            });
-
-            builder.Services.AddScoped<ITrainingRepository, TrainingRepository>();
-            builder.Services.AddScoped<ITrainingService, TrainingService>();
-
-            builder.Services.AddDbContext<DataAccess.AppContext>(x =>
-            {
-                x.UseNpgsql("UserName=postgres;Password=postgres;Host=localhost;Port=5432;Database=TrainingsDb;");
-            });
+            builder.Services.AddDependencies(builder.Configuration);
 
             var app = builder.Build();
 
@@ -38,6 +22,8 @@ namespace TrainingsApi
                     settings.DocumentPath = "/swagger/v1/swagger.json";
                 });
             }
+
+            app.MapHealthChecks("/health", HealthCheckOptionsFactory.Create("TrainingsApi"));
 
             app.UseHttpsRedirection();
             app.UseAuthorization();

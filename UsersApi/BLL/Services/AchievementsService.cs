@@ -6,7 +6,7 @@ namespace UsersApi.BLL.Services
 {
     public class AchievementsService(IHttpClientFactory httpClientFactory) : IAchievementsService
     {
-        private const string Endpoint = "api/Achievements/get-all";
+        private const string Endpoint = "api/v1/Achievements/user";
 
         public async Task<List<AchievementDto>> GetAllAchievements(int userId)
         {
