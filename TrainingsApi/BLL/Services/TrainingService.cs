@@ -45,7 +45,23 @@ namespace TrainingsApi.BLL.Services
             var training = await repository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new ArgumentException($"Training with id {dto.Id} not found");
             var context = new TrainingContext(training.Status);
+            ChangeStatus(dto, context);
 
+            training.Status = context.Status;
+
+            await repository.UpdateAsync(training, cancellationToken);
+        }
+
+        public async Task DeleteAsync(int trainingId, CancellationToken cancellationToken = default)
+        {
+            var trainig = await repository.GetByIdAsync(trainingId, cancellationToken)
+                ?? throw new ArgumentException($"Training with id {trainingId} not found");
+
+            await repository.DeleteAsync(trainig, cancellationToken);
+        }
+
+        private static void ChangeStatus(TrainingStatusUpdateDto dto, TrainingContext context)
+        {
             switch (dto.Status)
             {
                 case (int)DataAccess.Enums.StatusType.Planned:
@@ -63,18 +79,6 @@ namespace TrainingsApi.BLL.Services
                 default:
                     throw new ArgumentException($"Unknown status: {dto.Status}");
             }
-
-            training.Status = context.Status;
-
-            await repository.UpdateAsync(training, cancellationToken);
-        }
-
-        public async Task DeleteAsync(int trainingId, CancellationToken cancellationToken = default)
-        {
-            var trainig = await repository.GetByIdAsync(trainingId, cancellationToken)
-                ?? throw new ArgumentException($"Training with id {trainingId} not found");
-
-            await repository.DeleteAsync(trainig, cancellationToken);
         }
     }
 }
