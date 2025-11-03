@@ -19,31 +19,35 @@ namespace UsersApi.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task CreatedAsync(User user, CancellationToken cancellationToken = default)
-        {         
-            context.Users.Add(user);
+        public async Task<bool> CreatedAsync(User user, CancellationToken cancellationToken = default)
+        {
             user.Created = DateTime.UtcNow;
-            await context.SaveChangesAsync(cancellationToken);
+            context.Users.Add(user);
+            var result = await context.SaveChangesAsync(cancellationToken);
+            return result > 0;
         }
 
-        public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
+        public async Task<bool> UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
+            user.Updated = DateTime.UtcNow;
             context.Users.Update(user);
-            user.Updated=DateTime.UtcNow;
-            await context.SaveChangesAsync(cancellationToken);
+            var result = await context.SaveChangesAsync(cancellationToken);
+            return result > 0;
         }
 
         public async Task<bool> DeleteAsync(int userId, CancellationToken cancellationToken = default)
         {
-            var user = await context.Users.FindAsync([userId], cancellationToken);
-            if (user != null && !user.IsDeleted)
+            var user = await context.Users
+                .FirstOrDefaultAsync(x => x.Id == userId && x.IsDeleted == false, cancellationToken);
+
+            if (user != null)
             {
                 user.IsDeleted = true;
                 user.Updated = DateTime.UtcNow;
 
                 context.Users.Update(user);
-                await context.SaveChangesAsync(cancellationToken);
-                return true;
+                var result = await context.SaveChangesAsync(cancellationToken);
+                return result > 0;
             }
             return false;
         }

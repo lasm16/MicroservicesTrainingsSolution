@@ -30,14 +30,14 @@ namespace UsersApi.BLL.Services
             }
             return response;
         }
-        
+
         public async Task<List<UserDto>> GetAllAsync(CancellationToken cancellationToken)
         {
             var users = await userRepository.GetAllAsync(cancellationToken);
             return [.. users.Select(u => UserMapper.ToDto(u))];
         }
 
-        public async Task<UserDto> CreateAsync(UserRequest request, CancellationToken cancellationToken)
+        public async Task<bool> CreateAsync(UserRequest request, CancellationToken cancellationToken)
         {
 
             var existingUser = await userRepository.GetByIdAsync(request.Id, cancellationToken);
@@ -45,29 +45,22 @@ namespace UsersApi.BLL.Services
             {
                 throw new InvalidOperationException($"Пользователь с Id = {request.Id} уже существует.");
             }
-            var userDto = UserMapper.MapToUserDto(request);
+            var user = UserMapper.MapUserRequestToUser(request);
 
-            var userEntity = UserMapper.ToEntity(userDto);
-
-            await userRepository.CreatedAsync(userEntity, cancellationToken);
-
-            return userDto;
+            return await userRepository.CreatedAsync(user, cancellationToken);
         }
 
         public async Task<bool> UpdateAsync(UserRequest request, CancellationToken cancellationToken)
         {
-            var userDto = UserMapper.MapToUserDto(request);
-
-
-            var existingUser = await userRepository.GetByIdAsync(userDto.Id, cancellationToken);
-            if (existingUser == null || existingUser.IsDeleted)
+            var existingUser = await userRepository.GetByIdAsync(request.Id, cancellationToken);
+            if (existingUser == null)
+            {
                 return false;
+            }
 
-            UserMapper.UpdateEntity(userDto, existingUser);
+            UpdateEntity(request, existingUser);
 
-            await userRepository.UpdateAsync(existingUser, cancellationToken);
-
-            return true;
+            return await userRepository.UpdateAsync(existingUser, cancellationToken);
         }
 
         public async Task<bool> DeleteAsync(int userId, CancellationToken cancellationToken = default)
@@ -90,6 +83,13 @@ namespace UsersApi.BLL.Services
             response.Achievements = await achievementsTask;
             response.Nutritions = await nutritionsTask;
             response.Trainings = await trainingsTask;
+        }
+
+        private static void UpdateEntity(UserRequest request, DataAccess.Models.User existingUser)
+        {
+            existingUser.Name = request.Name;
+            existingUser.Surname = request.Surname;
+            existingUser.Email = request.Email;
         }
     }
 }
