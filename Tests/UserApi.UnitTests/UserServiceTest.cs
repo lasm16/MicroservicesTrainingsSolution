@@ -1,11 +1,8 @@
 ﻿using DataAccess.Models;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using Moq;
 using UsersApi.Abstractions;
 using UsersApi.BLL.DTOs;
 using UsersApi.BLL.Services;
-using UsersApi.Properties;
 
 namespace Tests.UserApi.UnitTests
 {
@@ -18,9 +15,7 @@ namespace Tests.UserApi.UnitTests
         private Mock<IAchievementsService> _achievementsService;
         private Mock<INutritionsService> _nutritionsService;
         private Mock<ITrainingsService> _trainingsService;
-        private IMemoryCache _memoryCache;
-        private AppSettingsConfig _appSettingsConfig;
-        private Mock<IOptions<AppSettingsConfig>> _options;
+        private Mock<IMemoryCacheService> _memoryCacheService;
         private UserService _service;
 
         [TestInitialize]
@@ -30,19 +25,9 @@ namespace Tests.UserApi.UnitTests
             _achievementsService = new Mock<IAchievementsService>();
             _trainingsService = new Mock<ITrainingsService>();
             _nutritionsService = new Mock<INutritionsService>();
-            _memoryCache = new MemoryCache(new MemoryCacheOptions());
-            _appSettingsConfig = new AppSettingsConfig
-            {
-                CacheSettings = new CacheSettings
-                {
-                    AbsoluteExpirationFromSeconds = 1
-                }
-            };
-            _options = new Mock<IOptions<AppSettingsConfig>>();
-            _options.Setup(x => x.Value)
-                .Returns(_appSettingsConfig);
+            _memoryCacheService = new Mock<IMemoryCacheService>();
             _service = new UserService(_mockRepository.Object, _achievementsService.Object,
-                _nutritionsService.Object, _trainingsService.Object, _memoryCache, _options.Object);
+                _nutritionsService.Object, _trainingsService.Object, _memoryCacheService.Object);
         }
 
         [TestMethod]
@@ -69,8 +54,7 @@ namespace Tests.UserApi.UnitTests
                 .SetEmail("vlad@mail.ru")
                 .Build();
 
-            _memoryCache.Set(response.Id, response);
-
+            _memoryCacheService.Setup(x => x.TryGet(1, out response));
             await _service.GetByIdAsync(1, TestContext.CancellationToken);
             _mockRepository.Verify(x => x.GetByIdAsync(It.IsAny<int>(), TestContext.CancellationToken), Times.Never);
         }

@@ -1,37 +1,28 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-using UsersApi.Abstractions;
+﻿using UsersApi.Abstractions;
 using UsersApi.BLL.DTOs;
 using UsersApi.BLL.Mapper;
-using UsersApi.Properties;
 
 namespace UsersApi.BLL.Services
 {
     public class UserService(
         IUserRepository userRepository,
-        IAchievementsService achievementService,
+        IAchievementsService achievementsService,
         INutritionsService nutritionsService,
         ITrainingsService trainingsService,
-        IMemoryCache memoryCache,
-        IOptions<AppSettingsConfig> settingsConfig) : IUserService
+        IMemoryCacheService memoryCacheService) : IUserService
     {
-        private readonly AppSettingsConfig _settingsConfig = settingsConfig.Value;
-
         public async Task<UserResponse?> GetByIdAsync(int userId, CancellationToken cancellationToken = default)
         {
-            memoryCache.TryGetValue(userId, out UserResponse? response);
+            memoryCacheService.TryGet(userId, out UserResponse? response);
             if (response == null)
             {
                 var user = await userRepository.GetByIdAsync(userId, cancellationToken);
                 if (user == null) return null;
 
                 response = UserMapper.GetUserResponse(user);
-                response.Achievements = await achievementService.GetAllAchievements(userId);
-                response.Nutritions = await nutritionsService.GetAllNutritions(userId);
-                response.Trainings = await trainingsService.GetAllTrainings(userId);
+                await GetInfoFromServices(userId, response);
                 Console.WriteLine($"Пользователь с Id={user.Id} извлечен из базы данных");
-                var options = GetMemoryCacheOptions();
-                memoryCache.Set(response.Id, response, options);
+                memoryCacheService.Set(response.Id, response);
             }
             else
             {
@@ -39,7 +30,7 @@ namespace UsersApi.BLL.Services
             }
             return response;
         }
-
+        
         public async Task<List<UserDto>> GetAllAsync(CancellationToken cancellationToken)
         {
             var users = await userRepository.GetAllAsync(cancellationToken);
@@ -88,10 +79,17 @@ namespace UsersApi.BLL.Services
             return await userRepository.DeleteAsync(userId, cancellationToken);
         }
 
-        private MemoryCacheEntryOptions GetMemoryCacheOptions()
+        private async Task GetInfoFromServices(int userId, UserResponse response)
         {
-            var expirationTime = TimeSpan.FromSeconds(_settingsConfig.CacheSettings!.AbsoluteExpirationFromSeconds);
-            return new MemoryCacheEntryOptions().SetAbsoluteExpiration(expirationTime);
+            var achievementsTask = achievementsService.GetAllAchievements(userId);
+            var nutritionsTask = nutritionsService.GetAllNutritions(userId);
+            var trainingsTask = trainingsService.GetAllTrainings(userId);
+
+            await Task.WhenAll(achievementsTask, nutritionsTask, trainingsTask);
+
+            response.Achievements = await achievementsTask;
+            response.Nutritions = await nutritionsTask;
+            response.Trainings = await trainingsTask;
         }
     }
 }

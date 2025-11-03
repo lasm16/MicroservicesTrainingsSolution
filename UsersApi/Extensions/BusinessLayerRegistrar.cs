@@ -15,6 +15,7 @@ namespace UsersApi.Extensions
             services.AddScoped<IAchievementsService, AchievementsService>();
             services.AddScoped<INutritionsService, NutritionsService>();
             services.AddScoped<ITrainingsService, TrainingsService>();
+            services.AddScoped<IMemoryCacheService, MemoryCacheService>();
         }
     }
 }
