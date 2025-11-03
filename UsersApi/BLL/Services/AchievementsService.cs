@@ -13,7 +13,7 @@ namespace UsersApi.BLL.Services
             try
             {
                 using var client = httpClientFactory.CreateClient(HttpClientConfig.AchievementsClient);
-                var response = await client.GetAsync($"{Endpoint}/{userId}");
+                using var response = await client.GetAsync($"{Endpoint}/{userId}");
                 response.EnsureSuccessStatusCode();
                 var list = await response.Content.ReadFromJsonAsync<List<AchievementDto>>();
                 return list ?? [];

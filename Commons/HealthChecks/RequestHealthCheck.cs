@@ -19,7 +19,7 @@ namespace Commons.HealthChecks
             try
             {
                 using var client = httpClientFactory.CreateClient();
-                await client.GetAsync(requestUri + "/health", cancellationToken);
+                using var httpResponseMessage = await client.GetAsync(requestUri + "/health", cancellationToken);
                 stopwatch.Stop();
                 var responseTime = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
                 var messageSuccess = RequestTimeCheckHealthy + $"{responseTime.TotalMilliseconds}  ms";
