@@ -27,16 +27,5 @@ namespace TrainingsApi.BLL.Helpers
             DurationInMinutes = dto.DurationInMinutes,
             Status = (DataAccess.Enums.StatusType)dto.Status,
         };
-
-        public static Training ToModel(TrainingUpdateDto dto) => new()
-        {
-            Id = dto.Id,
-            UserId = dto.UserId,
-            Description = dto.Description,
-            Date = dto.Date,
-            DurationInMinutes = dto.DurationInMinutes,
-            Status = (DataAccess.Enums.StatusType)dto.Status,
-            IsDeleted = dto.IsDeleted,
-        };
     }
 }

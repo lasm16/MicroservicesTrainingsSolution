@@ -31,13 +31,11 @@ namespace TrainingsApi.BLL.Services
 
         public async Task UpdateAsync(TrainingUpdateDto dto, CancellationToken cancellationToken = default)
         {
-            var trainingFromRepo = await repository.GetByIdAsync(dto.Id, cancellationToken)
+            var training = await repository.GetByIdAsync(dto.Id, cancellationToken)
                 ?? throw new KeyNotFoundException($"Training with id {dto.Id} not found");
 
-            var training = TrainingMapper.ToModel(dto);
-            trainingFromRepo = training;
-
-            await repository.UpdateAsync(trainingFromRepo, cancellationToken);
+            UpdateTraining(dto, training);
+            await repository.UpdateAsync(training, cancellationToken);
         }
 
         public async Task UpdateStatusAsync(TrainingStatusUpdateDto dto, CancellationToken cancellationToken = default)
@@ -79,6 +77,16 @@ namespace TrainingsApi.BLL.Services
                 default:
                     throw new ArgumentException($"Unknown status: {dto.Status}");
             }
+        }
+
+        private static void UpdateTraining(TrainingUpdateDto dto, DataAccess.Models.Training training)
+        {
+            training.UserId = dto.UserId;
+            training.Date = dto.Date;
+            training.DurationInMinutes = dto.DurationInMinutes;
+            training.Description = dto.Description;
+            training.Status = (DataAccess.Enums.StatusType)dto.Status;
+            training.IsDeleted = dto.IsDeleted;
         }
     }
 }

@@ -6,8 +6,8 @@ namespace UsersApi.Abstractions
     {
         Task<UserResponse?> GetByIdAsync(int userId, CancellationToken cancellationToken = default);
         Task<List<UserDto>> GetAllAsync(CancellationToken cancellationToken = default);
-        internal Task<UserDto> CreateAsync(UserRequest createUserDTO, CancellationToken cancellationToken = default);
-        internal Task <bool> UpdateAsync(UserRequest updateUserDTO, CancellationToken cancellationToken = default);
-        internal Task<bool> DeleteAsync(int userId, CancellationToken cancellationToken = default);
+        Task<bool> CreateAsync(UserRequest userRequest, CancellationToken cancellationToken = default);
+        Task<bool> UpdateAsync(UserRequest userRequest, CancellationToken cancellationToken = default);
+        Task<bool> DeleteAsync(int userId, CancellationToken cancellationToken = default);
     }
 }
