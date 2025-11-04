@@ -87,9 +87,9 @@ namespace UsersApi.BLL.Services
 
         private static void UpdateEntity(UserRequest request, DataAccess.Models.User existingUser)
         {
-            existingUser.Name = request.Name;
-            existingUser.Surname = request.Surname;
-            existingUser.Email = request.Email;
+            existingUser.Name = request.Name.Trim();
+            existingUser.Surname = request.Surname.Trim();
+            existingUser.Email = request.Email.Trim();
         }
     }
 }

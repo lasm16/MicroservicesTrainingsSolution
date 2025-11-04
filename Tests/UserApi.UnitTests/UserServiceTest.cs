@@ -144,7 +144,7 @@ namespace Tests.UserApi.UnitTests
                           .ReturnsAsync(existingUser);
 
             _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
-                          .Returns(Task.CompletedTask);
+                          .Returns(Task.FromResult(true));
 
             await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
             {
@@ -183,7 +183,7 @@ namespace Tests.UserApi.UnitTests
             User capturedUser = null;
             _mockRepository.Setup(r => r.CreatedAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
                           .Callback<User, CancellationToken>((u, ct) => capturedUser = u)
-                          .Returns(Task.CompletedTask);
+                          .Returns(Task.FromResult(true));
 
             await _service.CreateAsync(request, TestContext.CancellationToken);
 
@@ -204,7 +204,7 @@ namespace Tests.UserApi.UnitTests
             User capturedUser = null;
             _mockRepository.Setup(r => r.UpdateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
                           .Callback<User, CancellationToken>((u, ct) => capturedUser = u)
-                          .Returns(Task.CompletedTask);
+                          .Returns(Task.FromResult(true));
 
             var result = await _service.UpdateAsync(request, TestContext.CancellationToken);
 
