@@ -18,7 +18,7 @@ namespace Commons.HealthChecks
             var stopwatch = Stopwatch.StartNew();
             try
             {
-                using var client = httpClientFactory.CreateClient();
+                var client = httpClientFactory.CreateClient();
                 using var httpResponseMessage = await client.GetAsync(requestUri + "/health", cancellationToken);
                 stopwatch.Stop();
                 var responseTime = TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds);
